@@ -4,8 +4,6 @@ import { Sidebar } from '../components/common/Sidebar';
 import { Navbar } from '../components/common/Navbar';
 import { CommandPalette } from '../components/common/CommandPalette';
 import { ToastContainer } from '../components/common/ToastContainer';
-import { FloatingControls } from '../components/common/FloatingControls';
-import { VerticalStepper } from '../components/common/VerticalStepper';
 import { X } from 'lucide-react';
 
 export const RootLayout: React.FC = () => {
@@ -28,7 +26,7 @@ export const RootLayout: React.FC = () => {
           <div className="relative flex flex-col w-72 max-w-[85vw] h-full bg-[#07090F] border-r border-[#181C26] z-10">
             <button
               onClick={() => setMobileMenuOpen(false)}
-              className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-white rounded-lg"
+              className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-white rounded-lg cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -43,7 +41,7 @@ export const RootLayout: React.FC = () => {
       <div className="flex flex-col flex-1 min-w-0 h-screen overflow-hidden relative">
         <Navbar onMobileMenuToggle={() => setMobileMenuOpen(true)} />
         
-        <main className="flex-1 overflow-y-auto bg-[#040608] relative pb-20">
+        <main className="flex-1 overflow-y-auto bg-[#040608] relative">
           {/* Subtle ASCII Matrix Dot Pattern */}
           <div className="absolute inset-0 pointer-events-none ascii-matrix-bg opacity-25" />
           
@@ -52,12 +50,6 @@ export const RootLayout: React.FC = () => {
             <Outlet />
           </div>
         </main>
-
-        {/* Global Floating Controls Capsule (Image 1, 2 & 3 match) */}
-        <FloatingControls />
-
-        {/* Right Vertical Stepper (Image 1 match) */}
-        <VerticalStepper />
       </div>
 
       {/* Global Utilities */}

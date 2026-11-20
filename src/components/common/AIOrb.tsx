@@ -13,7 +13,7 @@ interface AIOrbProps {
 export const AIOrb: React.FC<AIOrbProps> = ({
   className = '',
   showControls = true,
-  initialMode = 'sphere',
+  initialMode = 'wireframe',
 }) => {
   const orbState = useAppStore((state) => state.orbState);
   const setOrbState = useAppStore((state) => state.setOrbState);

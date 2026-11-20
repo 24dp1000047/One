@@ -10,7 +10,7 @@ interface AsciiVisualizerProps {
 }
 
 export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
-  initialMode = 'sphere',
+  initialMode = 'wireframe',
   className = '',
   showSelector = true,
 }) => {
@@ -24,11 +24,13 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
     pausedRef.current = isMotionPaused;
   }, [isMotionPaused]);
 
+  // Track mouse coordinates for subtle interactive perspective shift
+  const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
+
   useEffect(() => {
     const handleReboot = () => {
-      // Re-trigger flash effect
       if (canvasRef.current) {
-        canvasRef.current.style.opacity = '0.3';
+        canvasRef.current.style.opacity = '0.25';
         setTimeout(() => {
           if (canvasRef.current) canvasRef.current.style.opacity = '1';
         }, 150);
@@ -56,12 +58,36 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
     canvas.style.height = `${height}px`;
     ctx.scale(dpr, dpr);
 
-    // ASCII characters density ramp
     const density = ' .:-=+*#%@';
 
+    // 3D Wireframe buildings with depth $z$ for smooth forward infinite stream
+    const baseBuildings = [
+      { id: 1, relX: -160, w: 75, h: 220, z: 0.15 },
+      { id: 2, relX: -85, w: 55, h: 170, z: 0.45 },
+      { id: 3, relX: -150, w: 65, h: 200, z: 0.75 },
+      { id: 4, relX: 85, w: 55, h: 180, z: 0.25 },
+      { id: 5, relX: 160, w: 80, h: 240, z: 0.55 },
+      { id: 6, relX: 95, w: 60, h: 190, z: 0.85 },
+    ];
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      const normX = (e.clientX - rect.left) / rect.width - 0.5;
+      const normY = (e.clientY - rect.top) / rect.height - 0.5;
+      mouseRef.current.targetX = normX * 15;
+      mouseRef.current.targetY = normY * 10;
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+
     const render = () => {
+      // Smooth mouse lerp
+      mouseRef.current.x += (mouseRef.current.targetX - mouseRef.current.x) * 0.05;
+      mouseRef.current.y += (mouseRef.current.targetY - mouseRef.current.y) * 0.05;
+
+      const speedFactor = orbState === 'thinking' ? 1.8 : orbState === 'generating' ? 2.8 : 1.0;
       if (!pausedRef.current) {
-        time += orbState === 'thinking' ? 0.05 : orbState === 'generating' ? 0.09 : 0.02;
+        time += 0.02 * speedFactor;
       }
 
       ctx.fillStyle = '#040608';
@@ -71,7 +97,163 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'center';
 
-      if (mode === 'sphere') {
+      if (mode === 'wireframe') {
+        // =========================================================
+        // --- MODE 3: ACTIVELY MOVING 3D WIREFRAME CITY (Image 3) ---
+        // =========================================================
+        const vanishX = width * 0.5 + mouseRef.current.x;
+        const vanishY = height * 0.43 + mouseRef.current.y;
+
+        // 1. Horizon Line & Glowing Vanishing Point Beacon
+        ctx.strokeStyle = 'rgba(142, 174, 234, 0.2)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, vanishY);
+        ctx.lineTo(width, vanishY);
+        ctx.stroke();
+
+        // Amber Beacon Glow at Vanishing Point
+        const glowPulse = 0.5 + Math.sin(time * 3) * 0.2;
+        const gradient = ctx.createRadialGradient(vanishX, vanishY, 0, vanishX, vanishY, 35);
+        gradient.addColorStop(0, `rgba(229, 168, 102, ${glowPulse * 0.8})`);
+        gradient.addColorStop(1, 'rgba(229, 168, 102, 0)');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(vanishX, vanishY, 35, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 2. Vanishing Perspective Radial Street Vectors
+        const numRays = 18;
+        for (let i = -numRays; i <= numRays; i++) {
+          const bottomX = vanishX + i * 28 + mouseRef.current.x * 0.5;
+          ctx.beginPath();
+          ctx.moveTo(vanishX, vanishY);
+          ctx.lineTo(bottomX, height);
+
+          if (i === 0) {
+            // Golden Center Divider Line
+            ctx.strokeStyle = '#E5A866';
+            ctx.lineWidth = 1.5;
+          } else if (Math.abs(i) === 3 || Math.abs(i) === 6) {
+            // Road Curb Borders
+            ctx.strokeStyle = 'rgba(165, 196, 242, 0.45)';
+            ctx.lineWidth = 1;
+          } else {
+            ctx.strokeStyle = 'rgba(142, 174, 234, 0.14)';
+            ctx.lineWidth = 0.8;
+          }
+          ctx.stroke();
+        }
+
+        // 3. FLUID MOVING HORIZONTAL TRANSVERSE DEPTH GRIDS (Streaming towards camera!)
+        const numGrids = 16;
+        for (let g = 0; g < numGrids; g++) {
+          // Modular continuous offset moving forward!
+          const rawOffset = ((g / numGrids) + (time * 0.35)) % 1.0;
+          // Exponential perspective depth warp
+          const depth = Math.pow(rawOffset, 2.8);
+          const y = vanishY + (height - vanishY) * depth;
+
+          // Road width spreads as it approaches the screen
+          const spread = width * (0.15 + depth * 0.9);
+          const leftX = vanishX - spread * 0.5;
+          const rightX = vanishX + spread * 0.5;
+
+          ctx.beginPath();
+          ctx.moveTo(Math.max(0, leftX), y);
+          ctx.lineTo(Math.min(width, rightX), y);
+
+          // Alpha fades in near horizon, reaches maximum intensity near bottom
+          const alpha = Math.min(0.7, 0.05 + depth * 0.75);
+          ctx.strokeStyle = `rgba(165, 196, 242, ${alpha})`;
+          ctx.lineWidth = depth > 0.6 ? 1.5 : 1;
+          ctx.stroke();
+        }
+
+        // 4. Center Dashed Road Markings Streaming Forward
+        const numDashes = 10;
+        for (let d = 0; d < numDashes; d++) {
+          const dashOffset = ((d / numDashes) + (time * 0.7)) % 1.0;
+          const depth = Math.pow(dashOffset, 2.6);
+          const dashY = vanishY + (height - vanishY) * depth;
+          const dashLen = 4 + depth * 22;
+
+          ctx.beginPath();
+          ctx.moveTo(vanishX, dashY);
+          ctx.lineTo(vanishX, dashY + dashLen);
+          ctx.strokeStyle = `rgba(255, 240, 200, ${0.2 + depth * 0.8})`;
+          ctx.lineWidth = 2 + depth * 2;
+          ctx.stroke();
+        }
+
+        // 5. MOVING WIREFRAME MONOLITHS & BUILDINGS (With continuous 3D forward translation!)
+        baseBuildings.forEach((b) => {
+          // Calculate moving depth z from 0 (horizon) to 1 (passes screen)
+          const currentZ = (b.z + (time * 0.12)) % 1.0;
+          const depthScale = Math.pow(currentZ, 2.2);
+
+          // Calculate 3D perspective position
+          const bx = vanishX + b.relX * (0.2 + depthScale * 0.9) - (b.w * (0.3 + depthScale * 0.7)) * 0.5;
+          const baseFloorY = vanishY + (height - vanishY) * depthScale;
+          const currentH = b.h * (0.25 + depthScale * 0.8);
+          const currentW = b.w * (0.25 + depthScale * 0.75);
+          const by = baseFloorY - currentH;
+
+          // Only draw if within visible canvas bounds
+          if (baseFloorY > vanishY && by < height + 50) {
+            const alpha = Math.min(0.85, 0.15 + depthScale * 0.75);
+
+            // Building Outer Wireframe
+            ctx.strokeStyle = `rgba(220, 232, 252, ${alpha})`;
+            ctx.lineWidth = depthScale > 0.5 ? 1.5 : 1;
+            ctx.strokeRect(bx, by, currentW, currentH);
+
+            // Roof Perspective Lines to Vanishing Point
+            ctx.beginPath();
+            ctx.moveTo(bx, by);
+            ctx.lineTo(vanishX, vanishY);
+            ctx.moveTo(bx + currentW, by);
+            ctx.lineTo(vanishX, vanishY);
+            ctx.strokeStyle = `rgba(165, 196, 242, ${alpha * 0.35})`;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+
+            // Internal Horizontal Floor Lines
+            const floors = 5;
+            for (let f = 1; f < floors; f++) {
+              const fy = by + (currentH / floors) * f;
+              ctx.beginPath();
+              ctx.moveTo(bx, fy);
+              ctx.lineTo(bx + currentW, fy);
+              ctx.strokeStyle = `rgba(142, 174, 234, ${alpha * 0.3})`;
+              ctx.lineWidth = 0.8;
+              ctx.stroke();
+            }
+
+            // Window Accent Glow Dot
+            if (depthScale > 0.3) {
+              ctx.fillStyle = `rgba(229, 168, 102, ${alpha * 0.85})`;
+              ctx.fillRect(bx + currentW * 0.4, by + currentH * 0.3, 3, 5);
+            }
+          }
+        });
+
+        // 6. Streaming Upper Matrix ASCII Telemetry Rays (Image 3 exact match)
+        ctx.fillStyle = '#8EAEEA';
+        ctx.font = '10px "JetBrains Mono", monospace';
+        for (let r = 0; r < 6; r++) {
+          const shift = Math.floor((time * 4 + r * 2) % 6);
+          const dashChars = shift % 2 === 0 ? '----.----.----' : '....----....----';
+          ctx.fillText(dashChars, 75 + mouseRef.current.x * 0.3, 90 + r * 22);
+          ctx.fillText(dashChars, 405 + mouseRef.current.x * 0.3, 90 + r * 22);
+        }
+
+        // Live Telemetry Watermark
+        ctx.fillStyle = 'rgba(165, 196, 242, 0.45)';
+        ctx.font = '9px "JetBrains Mono", monospace';
+        ctx.fillText(`60FPS // PERSPECTIVE VECTOR ACTIVE [${time.toFixed(1)}s]`, width * 0.5, height - 14);
+
+      } else if (mode === 'sphere') {
         // --- MODE 1: ASCII MATRIX SPHERE (Image 2) ---
         const rows = 32;
         const cols = 42;
@@ -89,18 +271,14 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
 
             if (distSq <= radius * radius) {
               const z = Math.sqrt(radius * radius - distSq);
-
-              // 3D rotation
               const rotY = time * 0.8;
               const rotX = 0.35;
 
-              // Rotate coords
               const x1 = x * Math.cos(rotY) + z * Math.sin(rotY);
               const z1 = -x * Math.sin(rotY) + z * Math.cos(rotY);
               const y1 = y * Math.cos(rotX) - z1 * Math.sin(rotX);
               const z2 = y * Math.sin(rotX) + z1 * Math.cos(rotX);
 
-              // Surface normal illumination
               const normalZ = z2 / radius;
               const normalX = x1 / radius;
               const normalY = y1 / radius;
@@ -110,37 +288,32 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
               const lightZ = 0.7;
               const dot = Math.max(0, normalX * lightX + normalY * lightY + normalZ * lightZ);
 
-              // Diagonal step slice check (Image 2 signature white stepped highlight!)
-              // Slicing from top-right towards bottom-left
               const slicePos = (x + y * 0.7) / radius;
               const isStepHighlight = Math.abs(slicePos - 0.05) < 0.12 && (Math.floor((y + 160) / 14) % 2 === 0);
 
               let char = '#';
-              let color = '#E6A868'; // Warm amber/gold
+              let color = '#E6A868';
 
               if (isStepHighlight) {
                 char = '#';
-                color = '#FFFFFF'; // White / silver stepped line
+                color = '#FFFFFF';
               } else {
-                // Character by density & depth
                 const charIdx = Math.floor(dot * (density.length - 1));
                 char = density[Math.min(density.length - 1, Math.max(1, charIdx))];
 
-                // Y-based color gradient (amber at top, violet middle, twilight cyan bottom)
                 const normY = (y + radius) / (radius * 2);
                 if (normY < 0.32) {
-                  color = '#E5A866'; // Amber / Gold top
+                  color = '#E5A866';
                   if (dot > 0.6) char = '%';
                 } else if (normY < 0.65) {
-                  color = '#9875D8'; // Violet mid
+                  color = '#9875D8';
                   if (dot > 0.5) char = '@';
                 } else {
-                  color = '#4A6999'; // Deep twilight blue bottom
+                  color = '#4A6999';
                   if (dot > 0.4) char = '=';
                 }
               }
 
-              // Subtle random character shimmering
               if (Math.random() < 0.03 && !pausedRef.current) {
                 char = '*';
               }
@@ -150,24 +323,19 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
             }
           }
         }
-      } else if (mode === 'lighthouse') {
+      } else {
         // --- MODE 2: ASCII LIGHTHOUSE & BEAM (Image 1) ---
         const towerX = width * 0.72;
         const towerTopY = 80;
-        const towerH = 310;
         const lanternW = 55;
         const towerW = 44;
 
-        // 1. Golden Glowing Lantern at top
         ctx.fillStyle = '#E5A866';
         for (let row = 0; row < 6; row++) {
-          const char = row === 0 || row === 5 ? '########' : '########';
-          ctx.fillText(char, towerX, towerTopY + row * 11);
+          ctx.fillText('########', towerX, towerTopY + row * 11);
         }
 
-        // 2. Horizontal Light Beam Shooting Leftward
         const beamAngle = Math.sin(time * 0.5) * 0.08;
-        ctx.fillStyle = 'rgba(229, 168, 102, 0.75)';
         for (let bx = 0; bx < 28; bx++) {
           const xPos = towerX - lanternW * 0.5 - bx * 11;
           const yPos = towerTopY + 22 + (bx * beamAngle * 10);
@@ -177,7 +345,6 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
           ctx.fillText(beamChar, xPos, yPos + 6);
         }
 
-        // 3. Tower Body with Red/Crimson and Silver/White Bands
         const bodyTopY = towerTopY + 70;
         const numBands = 8;
         const bandH = 28;
@@ -185,85 +352,20 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
         for (let b = 0; b < numBands; b++) {
           const isRed = b % 2 === 0;
           ctx.fillStyle = isRed ? '#C73838' : '#DDE4F0';
-
           const bandY = bodyTopY + b * bandH;
-          const bandWidth = towerW + b * 2;
 
           for (let line = 0; line < 3; line++) {
-            const charLine = isRed ? '#########' : '%%%%%%%%%';
-            ctx.fillText(charLine, towerX, bandY + line * 9);
+            ctx.fillText(isRed ? '#########' : '%%%%%%%%%', towerX, bandY + line * 9);
           }
         }
 
-        // 4. Base rocks
         ctx.fillStyle = '#4B5568';
         ctx.fillText('////////////////////', towerX, bodyTopY + numBands * bandH + 5);
         ctx.fillText('====================', towerX, bodyTopY + numBands * bandH + 16);
 
-        // 5. Monospace caption below tower (Image 1 match)
         ctx.fillStyle = '#8A94A6';
         ctx.font = '9px "JetBrains Mono", monospace';
-        ctx.fillText('A STEMONEF VERTICAL / A HUMAN BEGINNING', towerX - 30, height - 25);
-
-      } else {
-        // --- MODE 3: 3D WIREFRAME PERSPECTIVE CITY (Image 3) ---
-        const vanishX = width * 0.5;
-        const vanishY = height * 0.42;
-
-        ctx.strokeStyle = '#8EAEEA';
-        ctx.lineWidth = 1;
-
-        // Vanishing perspective street lines
-        for (let i = -10; i <= 10; i++) {
-          const bottomX = vanishX + i * 38;
-          ctx.beginPath();
-          ctx.moveTo(vanishX, vanishY);
-          ctx.lineTo(bottomX, height);
-          ctx.strokeStyle = i === 0 ? '#E5A866' : 'rgba(142, 174, 234, 0.25)';
-          ctx.stroke();
-        }
-
-        // Horizontal road depth grids
-        for (let d = 1; d <= 12; d++) {
-          const depthFactor = Math.pow(d / 12, 2.2);
-          const gridY = vanishY + (height - vanishY) * depthFactor;
-          ctx.beginPath();
-          ctx.moveTo(0, gridY);
-          ctx.lineTo(width, gridY);
-          ctx.strokeStyle = `rgba(142, 174, 234, ${0.1 + depthFactor * 0.35})`;
-          ctx.stroke();
-        }
-
-        // Wireframe City Monolith Buildings on Left & Right
-        const buildings = [
-          { x: 50, w: 70, h: 220, side: 'left' },
-          { x: 130, w: 60, h: 170, side: 'left' },
-          { x: 300, w: 55, h: 180, side: 'right' },
-          { x: 365, w: 75, h: 230, side: 'right' },
-        ];
-
-        buildings.forEach((b) => {
-          const by = height * 0.72 - b.h * 0.5;
-          ctx.strokeStyle = 'rgba(220, 230, 248, 0.65)';
-          ctx.strokeRect(b.x, by, b.w, b.h);
-
-          // Internal wireframe floors
-          for (let f = 1; f <= 5; f++) {
-            ctx.beginPath();
-            ctx.moveTo(b.x, by + (b.h / 6) * f);
-            ctx.lineTo(b.x + b.w, by + (b.h / 6) * f);
-            ctx.strokeStyle = 'rgba(142, 174, 234, 0.2)';
-            ctx.stroke();
-          }
-        });
-
-        // Matrix ASCII dashed rays
-        ctx.fillStyle = '#8EAEEA';
-        ctx.font = '10px "JetBrains Mono", monospace';
-        for (let r = 0; r < 6; r++) {
-          ctx.fillText('----.----.----', 80, 100 + r * 22);
-          ctx.fillText('----.----.----', 400, 100 + r * 22);
-        }
+        ctx.fillText('A CREATIVE VERTICAL / ONE SPACE. INFINITE POSSIBILITIES.', towerX - 70, height - 25);
       }
 
       animationFrameId = requestAnimationFrame(render);
@@ -273,6 +375,7 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('mousemove', handleMouseMove);
     };
   }, [mode, orbState]);
 
@@ -281,14 +384,22 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
       {/* Canvas container with ambient background glow */}
       <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#040608] shadow-2xl">
         <canvas ref={canvasRef} className="block transition-opacity duration-300" />
-
-        {/* Ambient subtle lighting halo behind canvas */}
         <div className="absolute inset-0 bg-radial-gradient pointer-events-none opacity-40" />
       </div>
 
-      {/* Mode Switcher Pills (Sphere / Lighthouse / Wireframe) */}
+      {/* Mode Switcher Pills */}
       {showSelector && (
         <div className="flex items-center gap-1.5 mt-3 px-2 py-1 rounded-full capsule-control text-[11px] font-mono text-zinc-400">
+          <button
+            onClick={() => setMode('wireframe')}
+            className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
+              mode === 'wireframe'
+                ? 'bg-white/15 text-white font-medium border border-white/20 shadow-sm'
+                : 'hover:text-white'
+            }`}
+          >
+            3D Wireframe
+          </button>
           <button
             onClick={() => setMode('sphere')}
             className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
@@ -308,16 +419,6 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
             }`}
           >
             Beacon
-          </button>
-          <button
-            onClick={() => setMode('wireframe')}
-            className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
-              mode === 'wireframe'
-                ? 'bg-white/15 text-white font-medium border border-white/20 shadow-sm'
-                : 'hover:text-white'
-            }`}
-          >
-            3D Wireframe
           </button>
         </div>
       )}
