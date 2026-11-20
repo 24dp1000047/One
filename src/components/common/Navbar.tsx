@@ -4,7 +4,10 @@ import {
   Search, 
   Bell, 
   Zap, 
-  Menu
+  Menu,
+  Volume2,
+  VolumeX,
+  Radio
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 
@@ -18,6 +21,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileMenuToggle }) => {
   const setCommandPaletteOpen = useAppStore((state) => state.setCommandPaletteOpen);
   const settings = useAppStore((state) => state.settings);
   const orbState = useAppStore((state) => state.orbState);
+  const audioMixer = useAppStore((state) => state.audioMixer);
+  const toggleAudioSynth = useAppStore((state) => state.toggleAudioSynth);
 
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
@@ -108,6 +113,29 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileMenuToggle }) => {
           />
           <span className="text-zinc-300 capitalize">{orbState}</span>
         </div>
+
+        {/* Ambient Web Audio Synthesizer Quick Toggle */}
+        <button
+          onClick={toggleAudioSynth}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-full capsule-control text-xs font-mono transition-all cursor-pointer ${
+            audioMixer.isPlayingSynth
+              ? 'border-pink-500/50 bg-pink-500/10 text-pink-300 shadow-sm shadow-pink-500/20'
+              : 'text-zinc-400 hover:text-white'
+          }`}
+          title={audioMixer.isPlayingSynth ? 'Synthesizer Active (Click to Pause)' : 'Start Ambient Synthesizer'}
+        >
+          {audioMixer.isPlayingSynth ? (
+            <>
+              <Volume2 className="w-3.5 h-3.5 text-pink-400 animate-pulse" />
+              <span className="hidden md:inline text-[10px] text-pink-300">SYNTH LIVE</span>
+            </>
+          ) : (
+            <>
+              <VolumeX className="w-3.5 h-3.5" />
+              <span className="hidden md:inline text-[10px]">SYNTH OFF</span>
+            </>
+          )}
+        </button>
 
         {/* Energy Balance Pill */}
         <div 

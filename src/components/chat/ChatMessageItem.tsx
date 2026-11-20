@@ -9,7 +9,9 @@ import {
   Bot, 
   User, 
   Code2, 
-  Sparkles 
+  Sparkles,
+  Move3d,
+  Layers
 } from 'lucide-react';
 import { ChatMessage } from '../../types';
 import { useAppStore } from '../../store/useAppStore';
@@ -27,6 +29,7 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
   const [copied, setCopied] = useState(false);
   const settings = useAppStore((state) => state.settings);
   const setStudioPrompt = useAppStore((state) => state.setStudioPrompt);
+  const setStudioMode = useAppStore((state) => state.setStudioMode);
   const regenerateLastMessage = useAppStore((state) => state.regenerateLastMessage);
   const addToast = useAppStore((state) => state.addToast);
 
@@ -219,16 +222,52 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
           {renderFormattedContent(message.content)}
         </div>
 
-        {/* Suggested Action Pill: Send to Video Studio */}
-        {!isUser && message.suggestedAction && (
-          <div className="pt-2">
+        {/* Assistant Direct Actions Row */}
+        {!isUser && (
+          <div className="pt-2 flex flex-wrap items-center gap-2">
             <button
               onClick={() => handleSendToStudio(message.suggestedAction?.payload)}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-brand-yellow/20 to-brand-orange/20 hover:from-brand-yellow hover:to-brand-orange text-brand-yellow hover:text-black border border-brand-yellow/40 hover:border-transparent font-medium text-xs transition-all shadow-glow-yellow-sm group"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#E5A866]/20 hover:bg-[#E5A866]/30 text-[#E5A866] border border-[#E5A866]/40 font-medium text-xs transition-colors cursor-pointer"
             >
               <Video className="w-3.5 h-3.5" />
-              <span>{message.suggestedAction.label}</span>
-              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+              <span>Send to Studio</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
+
+            <button
+              onClick={() => {
+                const text = message.suggestedAction?.payload || message.content;
+                setStudioPrompt(text);
+                setStudioMode('director3d');
+                addToast({
+                  type: 'info',
+                  title: 'Opening 3D Director',
+                  message: 'Calibrating 3D camera rig for this scene.',
+                });
+                navigate('/studio');
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#A5C4F2]/15 hover:bg-[#A5C4F2]/25 text-[#A5C4F2] border border-[#A5C4F2]/30 font-medium text-xs transition-colors cursor-pointer"
+            >
+              <Move3d className="w-3.5 h-3.5" />
+              <span>Direct in 3D Rig</span>
+            </button>
+
+            <button
+              onClick={() => {
+                const text = message.suggestedAction?.payload || message.content;
+                setStudioPrompt(text);
+                setStudioMode('nodes');
+                addToast({
+                  type: 'info',
+                  title: 'Opening Spatial Canvas',
+                  message: 'Mapped scene sequence onto creative board.',
+                });
+                navigate('/studio');
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 font-medium text-xs transition-colors cursor-pointer"
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>Map to Nodes</span>
             </button>
           </div>
         )}

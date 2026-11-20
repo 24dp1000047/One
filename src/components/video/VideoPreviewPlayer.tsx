@@ -10,9 +10,11 @@ import {
   Share2, 
   Repeat, 
   Settings2,
-  Film
+  Film,
+  Crosshair
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
+import { audioSynth } from '../../utils/audioSynth';
 
 interface VideoPreviewPlayerProps {
   posterUrl?: string;
@@ -27,6 +29,7 @@ export const VideoPreviewPlayer: React.FC<VideoPreviewPlayerProps> = ({
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [isLooping, setIsLooping] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showDirectorHud, setShowDirectorHud] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const duration = useAppStore((state) => state.duration) || 12;
@@ -34,8 +37,22 @@ export const VideoPreviewPlayer: React.FC<VideoPreviewPlayerProps> = ({
   const aspectRatio = useAppStore((state) => state.aspectRatio);
   const scenes = useAppStore((state) => state.scenes);
   const addToast = useAppStore((state) => state.addToast);
+  const colorGrading = useAppStore((state) => state.colorGrading);
+  const cameraRig = useAppStore((state) => state.cameraRig);
 
   const currentPoster = posterUrl || scenes[0]?.thumbnail || 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=80';
+
+  const getFilterStyle = () => {
+    const brightness = 1 + colorGrading.exposure / 100;
+    const contrast = colorGrading.contrast / 100;
+    const saturate = colorGrading.saturation / 100;
+    const sepia = Math.max(0, colorGrading.temperature / 100);
+    const hueRotate = colorGrading.temperature < 0 ? `${(colorGrading.temperature / 50) * 20}deg` : '0deg';
+
+    return {
+      filter: `brightness(${brightness}) contrast(${contrast}) saturate(${saturate}) sepia(${sepia * 0.4}) hue-rotate(${hueRotate})`,
+    };
+  };
 
   // Playback timer simulation
   useEffect(() => {
@@ -119,13 +136,52 @@ export const VideoPreviewPlayer: React.FC<VideoPreviewPlayerProps> = ({
         <img
           src={currentPoster}
           alt="Video Preview"
+          style={getFilterStyle()}
           className={`w-full h-full object-cover transition-transform duration-1000 ${
             isPlaying ? 'scale-110 translate-x-1' : 'scale-100'
           }`}
         />
 
+        {/* Dynamic Vignette from Color Grading */}
+        <div
+          className="absolute inset-0 pointer-events-none transition-opacity duration-200"
+          style={{
+            background: `radial-gradient(circle, transparent 40%, rgba(0,0,0,${colorGrading.vignette / 100}))`,
+          }}
+        />
+
         {/* Ambient Film Grain & Scanlines Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/40 pointer-events-none" />
+
+        {/* Director HUD Grid Overlay (when toggled) */}
+        {showDirectorHud && (
+          <div className="absolute inset-0 pointer-events-none z-15 flex flex-col justify-between p-4 border border-white/20">
+            {/* Rule of Thirds Lines */}
+            <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none">
+              <div className="border-r border-b border-white/15" />
+              <div className="border-r border-b border-white/15" />
+              <div className="border-b border-white/15" />
+              <div className="border-r border-b border-white/15" />
+              <div className="border-r border-b border-white/15" />
+              <div className="border-b border-white/15" />
+              <div className="border-r border-white/15" />
+              <div className="border-r border-white/15" />
+              <div />
+            </div>
+
+            {/* Center Crosshair */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-10 h-10 border border-brand-yellow/50 rounded-full flex items-center justify-center">
+                <div className="w-1.5 h-1.5 bg-brand-yellow rounded-full" />
+              </div>
+            </div>
+
+            {/* Live Camera & LUT Readout */}
+            <div className="absolute bottom-16 right-4 font-mono text-[10px] text-zinc-300 bg-black/70 px-2 py-1 rounded border border-white/10">
+              LENS: {cameraRig.fov}mm | {cameraRig.aperture} | LUT: {colorGrading.preset}
+            </div>
+          </div>
+        )}
 
         {/* Dynamic audio waveform animation when playing */}
         {isPlaying && (
@@ -160,6 +216,20 @@ export const VideoPreviewPlayer: React.FC<VideoPreviewPlayerProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              audioSynth.playClick(1300);
+              setShowDirectorHud(!showDirectorHud);
+            }}
+            className={`p-1.5 rounded-lg backdrop-blur-md border transition-colors cursor-pointer ${
+              showDirectorHud
+                ? 'bg-brand-yellow/20 border-brand-yellow text-brand-yellow'
+                : 'bg-black/70 border-white/10 text-white hover:text-brand-yellow'
+            }`}
+            title="Toggle Director HUD"
+          >
+            <Crosshair className="w-4 h-4" />
+          </button>
           <button
             onClick={handleShare}
             className="p-1.5 rounded-lg bg-black/70 backdrop-blur-md border border-white/10 text-white hover:text-brand-yellow transition-colors"

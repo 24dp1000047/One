@@ -13,6 +13,7 @@ import {
   Zap
 } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
+import { InteractiveParticleCanvas } from '../components/playground/InteractiveParticleCanvas';
 
 interface Variation {
   id: string;
@@ -153,6 +154,9 @@ export const Playground: React.FC = () => {
           <span>ZERO GPU OVERHEAD</span>
         </div>
       </div>
+
+      {/* Interactive Physics & Kinetic Particle Dynamics Simulator */}
+      <InteractiveParticleCanvas />
 
       {/* Input & Physics Controls Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

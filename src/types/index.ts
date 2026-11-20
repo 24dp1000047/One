@@ -107,3 +107,52 @@ export interface InspirationItem {
 }
 
 export type OrbState = 'idle' | 'thinking' | 'generating';
+
+export type StudioViewMode = 'split' | 'director3d' | 'nodes' | 'colorSound';
+
+export interface CameraRigState {
+  pitch: number;
+  yaw: number;
+  distance: number;
+  fov: number; // 18 to 135
+  aperture: string; // 'f/1.4', 'f/2.8', etc.
+  lightingAngle: number; // 0 to 360
+  lightingColor: string; // hex
+  lightingIntensity: number; // 0.5 to 3.0
+  cameraMode: 'Orbit' | 'Crane' | 'Drone' | 'DollyZoom' | 'Handheld';
+  motionCurve: 'linear' | 'ease-in-out' | 'cinematic-s' | 'whip-snap';
+}
+
+export interface ColorGradingState {
+  preset: string;
+  exposure: number; // -50 to +50
+  contrast: number; // 50 to 150
+  saturation: number; // 0 to 200
+  temperature: number; // -50 to +50 (cool to warm)
+  vignette: number; // 0 to 100
+  grain: number; // 0 to 100
+  bloom: number; // 0 to 100
+  lutName: string;
+}
+
+export interface AudioMixerState {
+  isPlayingSynth: boolean;
+  masterVolume: number; // 0 to 100
+  droneVolume: number; // 0 to 100
+  shimmerVolume: number; // 0 to 100
+  atmosphereVolume: number; // 0 to 100
+  sfxEnabled: boolean;
+  tempoBpm: number;
+}
+
+export interface NodeGraphItem {
+  id: string;
+  type: 'vision' | 'scene' | 'camera' | 'audio' | 'lut';
+  title: string;
+  subtitle?: string;
+  x: number;
+  y: number;
+  connectedTo: string[];
+  thumbnail?: string;
+  data: Record<string, any>;
+}

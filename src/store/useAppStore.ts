@@ -9,9 +9,15 @@ import {
   AspectRatio, 
   Resolution, 
   CameraMotion,
-  ChatMessage 
+  ChatMessage,
+  StudioViewMode,
+  CameraRigState,
+  ColorGradingState,
+  AudioMixerState,
+  NodeGraphItem
 } from '../types';
 import { INITIAL_CONVERSATIONS, INITIAL_PROJECTS, VIDEO_STYLES } from '../data/mockData';
+import { audioSynth } from '../utils/audioSynth';
 
 const DEFAULT_SETTINGS: UserSettings = {
   name: 'Alex Vance',
@@ -56,6 +62,139 @@ const INITIAL_SCENES: Scene[] = [
     prompt: 'Epic wide crane pulling upwards into sky, revealing a colossal megalopolis with flying transit pods.',
     visualNotes: 'Atmospheric depth, hundreds of glowing traffic streams, cinematic grandeur',
     thumbnail: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=600&q=80',
+  },
+];
+
+const INITIAL_CAMERA_RIG: CameraRigState = {
+  pitch: 16,
+  yaw: 38,
+  distance: 14,
+  fov: 35,
+  aperture: 'f/2.8',
+  lightingAngle: 55,
+  lightingColor: '#A5C4F2',
+  lightingIntensity: 1.6,
+  cameraMode: 'Orbit',
+  motionCurve: 'cinematic-s',
+};
+
+const INITIAL_COLOR_GRADING: ColorGradingState = {
+  preset: 'Humanon Noir',
+  exposure: 0,
+  contrast: 108,
+  saturation: 95,
+  temperature: -8,
+  vignette: 35,
+  grain: 20,
+  bloom: 25,
+  lutName: 'Humanon Obsidian',
+};
+
+const INITIAL_AUDIO_MIXER: AudioMixerState = {
+  isPlayingSynth: false,
+  masterVolume: 65,
+  droneVolume: 75,
+  shimmerVolume: 50,
+  atmosphereVolume: 40,
+  sfxEnabled: true,
+  tempoBpm: 84,
+};
+
+const INITIAL_NODE_GRAPH: NodeGraphItem[] = [
+  {
+    id: 'node-vision',
+    type: 'vision',
+    title: 'Core Script & Vision',
+    subtitle: 'High-concept cybernetic journey',
+    x: 30,
+    y: 110,
+    connectedTo: ['node-scene-1', 'node-lut'],
+    data: {
+      prompt: 'A cybernetic explorer standing in rain-soaked neo-shinjuku as holographic kanji illuminate towering skyscrapers.',
+      logline: 'An introspective sci-fi journey into synthetic consciousness.',
+    },
+  },
+  {
+    id: 'node-scene-1',
+    type: 'scene',
+    title: 'Scene 01: Low Angle Reflection',
+    subtitle: '4.0s / Slow Orbit',
+    x: 340,
+    y: 40,
+    connectedTo: ['node-scene-2', 'node-cam'],
+    thumbnail: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=400&q=80',
+    data: {
+      duration: 4,
+      cameraMotion: 'Slow Orbit',
+    },
+  },
+  {
+    id: 'node-scene-2',
+    type: 'scene',
+    title: 'Scene 02: Trenchcoat Steam Walk',
+    subtitle: '3.0s / Tracking Pan',
+    x: 650,
+    y: 40,
+    connectedTo: ['node-scene-3'],
+    thumbnail: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=400&q=80',
+    data: {
+      duration: 3,
+      cameraMotion: 'Pan Right',
+    },
+  },
+  {
+    id: 'node-scene-3',
+    type: 'scene',
+    title: 'Scene 03: Ascending Megalopolis',
+    subtitle: '5.0s / Crane Reveal',
+    x: 960,
+    y: 40,
+    connectedTo: ['node-audio'],
+    thumbnail: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=400&q=80',
+    data: {
+      duration: 5,
+      cameraMotion: 'Cinematic Crane Up',
+    },
+  },
+  {
+    id: 'node-cam',
+    type: 'camera',
+    title: '3D Virtual Camera Rig',
+    subtitle: '35mm Anamorphic Prime',
+    x: 340,
+    y: 280,
+    connectedTo: ['node-scene-2'],
+    data: {
+      focalLength: '35mm',
+      aperture: 'f/2.8',
+      angle: 'Yaw: +38°, Pitch: 16°',
+    },
+  },
+  {
+    id: 'node-lut',
+    type: 'lut',
+    title: 'Color Grade & Atmosphere',
+    subtitle: 'Humanon Noir / Obsidian Matrix',
+    x: 650,
+    y: 280,
+    connectedTo: ['node-scene-3'],
+    data: {
+      preset: 'Humanon Noir',
+      tone: 'Ice Blue & Deep Amber',
+    },
+  },
+  {
+    id: 'node-audio',
+    type: 'audio',
+    title: 'Soundscape & Foley Stems',
+    subtitle: '40Hz Sub-Drone + Cosmic Arp',
+    x: 960,
+    y: 280,
+    connectedTo: [],
+    data: {
+      masterBpm: 84,
+      stems: 'Sub Drone, Shimmer, Foley Rain',
+    },
   },
 ];
 
@@ -131,6 +270,23 @@ interface AppState {
   removeScene: (sceneId: string) => void;
   startVideoGeneration: () => void;
   cancelGeneration: () => void;
+
+  // Interactive Studio Modes & Extensions
+  studioMode: StudioViewMode;
+  setStudioMode: (mode: StudioViewMode) => void;
+  cameraRig: CameraRigState;
+  updateCameraRig: (updates: Partial<CameraRigState>) => void;
+  applyCameraRigToPrompt: () => void;
+  colorGrading: ColorGradingState;
+  updateColorGrading: (updates: Partial<ColorGradingState>) => void;
+  applyLutPreset: (presetName: string) => void;
+  audioMixer: AudioMixerState;
+  updateAudioMixer: (updates: Partial<AudioMixerState>) => void;
+  toggleAudioSynth: () => void;
+  nodeGraph: NodeGraphItem[];
+  updateNodeGraphItem: (id: string, updates: Partial<NodeGraphItem>) => void;
+  addNodeGraphItem: (item: Omit<NodeGraphItem, 'id'>) => void;
+  connectNodes: (sourceId: string, targetId: string) => void;
 }
 
 // LocalStorage helpers
@@ -651,5 +807,114 @@ The prompt will produce an ultra-crisp photorealistic rendering with volumetric 
       orbState: 'idle',
     });
     get().addToast({ type: 'warning', title: 'Generation Cancelled' });
+  },
+
+  // Interactive Studio Modes & Extensions
+  studioMode: 'split',
+  setStudioMode: (mode) => {
+    audioSynth.playClick(1400);
+    set({ studioMode: mode });
+  },
+
+  cameraRig: INITIAL_CAMERA_RIG,
+  updateCameraRig: (updates) => {
+    if (get().audioMixer.sfxEnabled) audioSynth.playClick(900);
+    set((state) => ({ cameraRig: { ...state.cameraRig, ...updates } }));
+  },
+  applyCameraRigToPrompt: () => {
+    const { cameraRig, studioPrompt } = get();
+    audioSynth.playWhoosh();
+    const telemetryTag = `[Camera: ${cameraRig.fov}mm Prime, ${cameraRig.aperture}, Yaw ${cameraRig.yaw}°, Pitch ${cameraRig.pitch}°, Lighting: ${cameraRig.lightingColor} at ${cameraRig.lightingAngle}°]`;
+    const cleanPrompt = studioPrompt.replace(/\[Camera:.*?\]/g, '').trim();
+    const updated = cleanPrompt ? `${cleanPrompt} ${telemetryTag}` : telemetryTag;
+    set({ studioPrompt: updated });
+    get().addToast({
+      type: 'success',
+      title: '3D Vector Injected',
+      message: `Synchronized ${cameraRig.fov}mm lens & lighting telemetry with prompt.`,
+    });
+  },
+
+  colorGrading: INITIAL_COLOR_GRADING,
+  updateColorGrading: (updates) => {
+    set((state) => ({ colorGrading: { ...state.colorGrading, ...updates } }));
+  },
+  applyLutPreset: (presetName) => {
+    audioSynth.playClick(1100);
+    const presets: Record<string, Partial<ColorGradingState>> = {
+      'Humanon Noir': { exposure: 0, contrast: 115, saturation: 85, temperature: -12, vignette: 40, grain: 25, bloom: 20 },
+      'Cyberpunk 2077': { exposure: 5, contrast: 125, saturation: 145, temperature: -20, vignette: 45, grain: 30, bloom: 55 },
+      'Dune Arrakis': { exposure: 10, contrast: 110, saturation: 110, temperature: 35, vignette: 30, grain: 40, bloom: 15 },
+      'Solaris 70mm': { exposure: -5, contrast: 105, saturation: 90, temperature: 18, vignette: 50, grain: 45, bloom: 35 },
+      'Matrix Phosphor': { exposure: 0, contrast: 130, saturation: 70, temperature: -35, vignette: 40, grain: 35, bloom: 30 },
+    };
+    const chosen = presets[presetName] || presets['Humanon Noir'];
+    set((state) => ({
+      colorGrading: {
+        ...state.colorGrading,
+        ...chosen,
+        preset: presetName,
+        lutName: presetName,
+      },
+    }));
+    get().addToast({
+      type: 'info',
+      title: `LUT Applied: ${presetName}`,
+      message: 'Color grading look synchronized with video monitor.',
+    });
+  },
+
+  audioMixer: INITIAL_AUDIO_MIXER,
+  updateAudioMixer: (updates) => {
+    set((state) => {
+      const next = { ...state.audioMixer, ...updates };
+      audioSynth.setVolumes(next.masterVolume, next.droneVolume, next.shimmerVolume, next.atmosphereVolume);
+      audioSynth.setSfxEnabled(next.sfxEnabled);
+      return { audioMixer: next };
+    });
+  },
+  toggleAudioSynth: () => {
+    const isCurrentlyPlaying = get().audioMixer.isPlayingSynth;
+    if (isCurrentlyPlaying) {
+      audioSynth.stopAtmosphere();
+      set((state) => ({ audioMixer: { ...state.audioMixer, isPlayingSynth: false } }));
+      get().addToast({ type: 'info', title: 'Synthesizer Paused', message: 'Atmospheric audio stems paused.' });
+    } else {
+      audioSynth.startAtmosphere();
+      const { audioMixer } = get();
+      audioSynth.setVolumes(audioMixer.masterVolume, audioMixer.droneVolume, audioMixer.shimmerVolume, audioMixer.atmosphereVolume);
+      audioSynth.setSfxEnabled(audioMixer.sfxEnabled);
+      set((state) => ({ audioMixer: { ...state.audioMixer, isPlayingSynth: true } }));
+      get().addToast({
+        type: 'success',
+        title: 'Synthesizer Active',
+        message: 'Procedural 40Hz sub-drone & ambient chord stems live.',
+      });
+    }
+  },
+
+  nodeGraph: INITIAL_NODE_GRAPH,
+  updateNodeGraphItem: (id, updates) => {
+    set((state) => ({
+      nodeGraph: state.nodeGraph.map((item) => (item.id === id ? { ...item, ...updates } : item)),
+    }));
+  },
+  addNodeGraphItem: (item) => {
+    audioSynth.playClick(1300);
+    const id = 'node-' + Date.now();
+    const newItem: NodeGraphItem = { ...item, id };
+    set((state) => ({ nodeGraph: [...state.nodeGraph, newItem] }));
+    get().addToast({ type: 'success', title: 'Node Added', message: `Added "${newItem.title}" to creative board.` });
+  },
+  connectNodes: (sourceId, targetId) => {
+    audioSynth.playClick(1000);
+    set((state) => ({
+      nodeGraph: state.nodeGraph.map((item) => {
+        if (item.id === sourceId && !item.connectedTo.includes(targetId)) {
+          return { ...item, connectedTo: [...item.connectedTo, targetId] };
+        }
+        return item;
+      }),
+    }));
   },
 }));
