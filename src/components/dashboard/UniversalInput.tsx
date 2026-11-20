@@ -5,8 +5,7 @@ import {
   Wand2, 
   Video, 
   MessageSquare, 
-  ArrowRight, 
-  CornerDownLeft,
+  ArrowUpRight, 
   Flame
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
@@ -38,7 +37,7 @@ export const UniversalInput: React.FC = () => {
     addToast({ type: 'info', title: 'Magic Enhancer', message: 'Injecting cinematic lighting & camera vectors...' });
 
     setTimeout(() => {
-      const enhanced = `Cinematic 8K anamorphic capture of ${prompt.trim()}, volumetric neon haze, obsidian reflections (#090909) with radiant amber highlights (#FFD600), 35mm lens, Unreal Engine 5.4 Lumen lighting.`;
+      const enhanced = `Cinematic 8K anamorphic capture of ${prompt.trim()}, volumetric neon haze, obsidian reflections (#040608) with radiant amber highlights (#E5A866), 35mm lens, Unreal Engine 5.4 Lumen lighting.`;
       setPrompt(enhanced);
       setIsEnhancing(false);
       addToast({ type: 'success', title: 'Prompt Enhanced', message: 'Cinematic master tokens added!' });
@@ -59,40 +58,40 @@ export const UniversalInput: React.FC = () => {
   };
 
   return (
-    <div className="relative rounded-2xl bg-[#121212] border border-[#262626] p-4 sm:p-5 shadow-2xl space-y-3.5">
+    <div className="relative rounded-3xl bg-[#080A10] border border-[#181C26] p-5 sm:p-7 shadow-2xl space-y-4">
       {/* Top Header: Mode Selector */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#1f1f1f] pb-3">
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#0a0a0a] border border-[#222222]">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#141822] pb-4">
+        <div className="flex items-center gap-1.5 p-1 rounded-full capsule-control">
           <button
             type="button"
             onClick={() => setMode('video')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-mono transition-all cursor-pointer ${
               mode === 'video'
-                ? 'bg-brand-yellow text-black font-semibold shadow-glow-yellow-sm'
-                : 'text-muted hover:text-white hover:bg-white/5'
+                ? 'bg-white/15 text-white font-medium border border-white/20 shadow-sm'
+                : 'text-zinc-400 hover:text-white'
             }`}
           >
-            <Video className="w-3.5 h-3.5" />
+            <Video className="w-3.5 h-3.5 text-[#A5C4F2]" />
             <span>Create Video</span>
           </button>
 
           <button
             type="button"
             onClick={() => setMode('chat')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-mono transition-all cursor-pointer ${
               mode === 'chat'
-                ? 'bg-brand-yellow text-black font-semibold shadow-glow-yellow-sm'
-                : 'text-muted hover:text-white hover:bg-white/5'
+                ? 'bg-white/15 text-white font-medium border border-white/20 shadow-sm'
+                : 'text-zinc-400 hover:text-white'
             }`}
           >
-            <MessageSquare className="w-3.5 h-3.5" />
+            <MessageSquare className="w-3.5 h-3.5 text-[#E5A866]" />
             <span>Chat & Script</span>
           </button>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-mono text-muted">
-          <span className="w-1.5 h-1.5 rounded-full bg-brand-yellow" />
-          <span>Universal Prompt Engine</span>
+        <div className="flex items-center gap-2 text-xs font-mono text-[#8A94A6]">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#E5A866] animate-pulse" />
+          <span>UNIVERSAL PROMPT MATRIX</span>
         </div>
       </div>
 
@@ -107,17 +106,17 @@ export const UniversalInput: React.FC = () => {
               ? 'Describe your cinematic scene... e.g. "Cybernetic astronaut walking across liquid gold dunes under a red giant star, 8K photoreal"'
               : 'Ask the AI Director for scene scripts, camera directions, lighting parameters or creative worldbuilding...'
           }
-          className="w-full bg-[#0a0a0a] border border-[#242424] focus:border-brand-yellow/60 rounded-xl p-3.5 text-sm text-white placeholder:text-muted/60 focus:outline-none focus:ring-1 focus:ring-brand-yellow/30 resize-none transition-all leading-relaxed"
+          className="w-full bg-[#05070C] border border-[#181C26] focus:border-[#A5C4F2]/50 rounded-2xl p-4 text-sm text-white placeholder:text-zinc-600 focus:outline-none resize-none leading-relaxed font-sans"
         />
 
         {/* Action Buttons along bottom of input */}
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex items-center justify-between pt-3">
           {/* Magic Enhancer Button */}
           <button
             type="button"
             onClick={handleMagicEnhance}
             disabled={isEnhancing}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#181818] hover:bg-[#202020] border border-[#2f2f2f] hover:border-brand-orange/50 text-xs text-brand-orange font-medium transition-all"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#0E121A] hover:bg-[#151B27] border border-[#1F2533] hover:border-[#E5A866]/40 text-xs text-[#E5A866] font-mono transition-all cursor-pointer"
             title="Enhance prompt with cinematic descriptors"
           >
             <Wand2 className={`w-3.5 h-3.5 ${isEnhancing ? 'animate-spin' : ''}`} />
@@ -128,26 +127,26 @@ export const UniversalInput: React.FC = () => {
           <button
             type="submit"
             disabled={!prompt.trim()}
-            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-brand-yellow to-brand-orange text-black font-semibold text-xs tracking-wide shadow-glow-yellow-sm hover:brightness-110 active:scale-95 disabled:opacity-40 disabled:pointer-events-none transition-all"
+            className="pill-action flex items-center gap-2 px-6 py-2 rounded-full font-sans font-semibold text-xs tracking-wide cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
           >
             <span>{mode === 'video' ? 'Synthesize Video' : 'Begin Chat'}</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
           </button>
         </div>
       </form>
 
       {/* Quick Starter Suggestions */}
       <div className="pt-2">
-        <div className="flex items-center gap-1.5 text-xs text-muted mb-2 font-mono">
-          <Flame className="w-3.5 h-3.5 text-brand-orange" />
-          <span>Trending Inspiration:</span>
+        <div className="flex items-center gap-1.5 text-xs text-zinc-500 mb-2 font-mono">
+          <Flame className="w-3.5 h-3.5 text-[#E5A866]" />
+          <span>Trending Prompts:</span>
         </div>
         <div className="flex flex-wrap gap-2">
           {samplePrompts.map((sample, idx) => (
             <button
               key={idx}
               onClick={() => setPrompt(sample)}
-              className="text-left text-xs px-2.5 py-1.5 rounded-lg bg-[#161616] hover:bg-[#1f1f1f] border border-[#262626] hover:border-brand-yellow/40 text-zinc-300 hover:text-white transition-all truncate max-w-xs"
+              className="text-left text-xs px-3 py-1.5 rounded-xl bg-[#0B0E16] hover:bg-[#121622] border border-[#181C26] hover:border-[#A5C4F2]/40 text-zinc-300 hover:text-white transition-all truncate max-w-xs font-mono"
             >
               {sample}
             </button>

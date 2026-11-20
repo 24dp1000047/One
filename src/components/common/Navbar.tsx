@@ -4,11 +4,7 @@ import {
   Search, 
   Bell, 
   Zap, 
-  Menu, 
-  Sparkles, 
-  Check, 
-  ExternalLink,
-  SlidersHorizontal 
+  Menu
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 
@@ -28,14 +24,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileMenuToggle }) => {
   // Derive title from pathname
   const getPageInfo = () => {
     const path = location.pathname;
-    if (path === '/') return { title: 'Dashboard', subtitle: 'Workspace Overview' };
-    if (path.startsWith('/chat')) return { title: 'AI Chat Studio', subtitle: 'Director Conversation' };
-    if (path.startsWith('/studio')) return { title: 'Text-to-Video Studio', subtitle: 'Generative Engine' };
-    if (path.startsWith('/playground')) return { title: 'Creative Playground', subtitle: 'A/B Experimentation' };
-    if (path.startsWith('/explore')) return { title: 'Explore', subtitle: 'Community Gallery' };
-    if (path.startsWith('/creations')) return { title: 'My Creations', subtitle: 'Rendered Archive' };
-    if (path.startsWith('/settings')) return { title: 'Settings', subtitle: 'Preferences & System' };
-    return { title: 'ONe Studio', subtitle: 'Creative Workspace' };
+    if (path === '/') return { title: 'Potential', code: '01' };
+    if (path.startsWith('/studio')) return { title: 'Studio Engine', code: '02' };
+    if (path.startsWith('/chat')) return { title: 'Director Chat', code: '03' };
+    if (path.startsWith('/playground')) return { title: 'Playground', code: '04' };
+    if (path.startsWith('/explore')) return { title: 'Explore Showcase', code: '05' };
+    if (path.startsWith('/creations')) return { title: 'My Creations', code: '06' };
+    if (path.startsWith('/settings')) return { title: 'Workspace Settings', code: '07' };
+    return { title: 'ONe Studio', code: '00' };
   };
 
   const pageInfo = getPageInfo();
@@ -65,53 +61,49 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileMenuToggle }) => {
   ];
 
   return (
-    <header className="sticky top-0 z-20 flex items-center justify-between h-16 px-4 md:px-6 bg-[#090909]/80 backdrop-blur-xl border-b border-[#1f1f1f]">
+    <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 md:px-8 bg-[#040608]/90 backdrop-blur-xl border-b border-[#141822]">
       {/* Left: Mobile Toggle & Page Titles */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <button
           onClick={onMobileMenuToggle}
-          className="p-2 text-muted hover:text-white rounded-lg hover:bg-white/5 md:hidden"
+          className="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-white/5 md:hidden cursor-pointer"
           aria-label="Open mobile menu"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2">
-            <h1 className="text-sm md:text-base font-semibold tracking-wide text-white">
-              {pageInfo.title}
-            </h1>
-            <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-zinc-600" />
-            <span className="hidden sm:inline-block text-xs text-muted font-light">
-              {pageInfo.subtitle}
-            </span>
-          </div>
+        <div className="flex items-center gap-2.5 font-mono text-xs">
+          <span className="text-[#A5C4F2] font-semibold">{pageInfo.code}</span>
+          <span className="text-zinc-600">/</span>
+          <h1 className="text-xs sm:text-sm font-medium tracking-widest uppercase text-white font-mono">
+            {pageInfo.title}
+          </h1>
         </div>
       </div>
 
-      {/* Right: Search, Orb State, Energy, Notifications */}
-      <div className="flex items-center gap-2.5 sm:gap-3.5">
+      {/* Right: Search, Energy, Notifications, Profile */}
+      <div className="flex items-center gap-3">
         {/* Command Palette Trigger */}
         <button
           onClick={() => setCommandPaletteOpen(true)}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#141414] hover:bg-[#1a1a1a] border border-[#262626] text-xs text-muted hover:text-zinc-200 transition-all shadow-inner"
+          className="flex items-center gap-2.5 px-3 py-1.5 rounded-full capsule-control text-xs text-zinc-400 hover:text-zinc-200 transition-all cursor-pointer font-mono"
         >
-          <Search className="w-3.5 h-3.5 text-muted" />
-          <span className="hidden sm:inline text-xs">Search actions...</span>
-          <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-zinc-400 bg-[#222222] border border-[#303030] rounded">
+          <Search className="w-3.5 h-3.5 text-zinc-400" />
+          <span className="hidden sm:inline text-[11px]">SEARCH</span>
+          <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[9px] font-mono text-zinc-400 bg-white/5 border border-white/10 rounded-full">
             ⌘K
           </kbd>
         </button>
 
         {/* AI Orb Status Pill */}
-        <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#141414] border border-[#242424] text-[11px] font-mono">
+        <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full capsule-control text-[11px] font-mono">
           <span 
-            className={`w-2 h-2 rounded-full ${
+            className={`w-1.5 h-1.5 rounded-full ${
               orbState === 'generating'
                 ? 'bg-brand-orange animate-ping'
                 : orbState === 'thinking'
-                ? 'bg-brand-yellow animate-pulse'
-                : 'bg-emerald-400'
+                ? 'bg-[#E5A866] animate-pulse'
+                : 'bg-[#A5C4F2]'
             }`}
           />
           <span className="text-zinc-300 capitalize">{orbState}</span>
@@ -120,44 +112,44 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileMenuToggle }) => {
         {/* Energy Balance Pill */}
         <div 
           onClick={() => navigate('/settings')}
-          className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#181818] to-[#121212] border border-[#292929] hover:border-brand-yellow/40 text-xs font-mono transition-all"
-          title="Your available ONe Energy credits for rendering"
+          className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-full capsule-control hover:border-[#E5A866]/40 text-xs font-mono transition-all"
+          title="Your available ONe Energy credits"
         >
-          <Zap className="w-3.5 h-3.5 text-brand-yellow" />
+          <Zap className="w-3.5 h-3.5 text-[#E5A866]" />
           <span className="text-white font-medium">{settings.energyCredits.toLocaleString()}</span>
-          <span className="text-muted text-[10px] hidden sm:inline">⚡</span>
+          <span className="text-zinc-500 text-[10px]">⚡</span>
         </div>
 
         {/* Notifications Dropdown */}
         <div className="relative">
           <button
             onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-            className="relative p-2 text-muted hover:text-white rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-[#2b2b2b]"
+            className="relative p-2 text-zinc-400 hover:text-white rounded-full capsule-control transition-colors cursor-pointer"
             aria-label="View notifications"
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-brand-orange animate-pulse" />
+            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#E5A866] animate-pulse" />
           </button>
 
           {isNotificationsOpen && (
-            <div className="absolute right-0 mt-2 w-80 rounded-2xl bg-[#141414] border border-[#2b2b2b] shadow-2xl p-3 z-50">
-              <div className="flex items-center justify-between pb-2 border-b border-[#242424] mb-2 px-1">
-                <span className="text-xs font-semibold text-white tracking-wide">Notifications</span>
-                <span className="text-[10px] font-mono text-brand-yellow">1 Unread</span>
+            <div className="absolute right-0 mt-3 w-80 rounded-2xl bg-[#090C12] border border-[#1A1F2C] shadow-2xl p-3.5 z-50">
+              <div className="flex items-center justify-between pb-2 border-b border-[#181C26] mb-2 font-mono text-xs">
+                <span className="font-semibold text-white tracking-widest uppercase">Telemetry</span>
+                <span className="text-[10px] text-[#A5C4F2]">1 Unread</span>
               </div>
               <div className="space-y-1.5">
                 {notifications.map((n) => (
                   <div
                     key={n.id}
                     className={`p-2.5 rounded-xl text-xs transition-colors cursor-pointer ${
-                      n.unread ? 'bg-brand-yellow/10 border border-brand-yellow/20' : 'hover:bg-white/[0.04]'
+                      n.unread ? 'bg-[#A5C4F2]/10 border border-[#A5C4F2]/20' : 'hover:bg-white/[0.04]'
                     }`}
                   >
                     <div className="flex items-center justify-between font-medium text-white mb-0.5">
                       <span>{n.title}</span>
-                      <span className="text-[10px] font-mono text-muted">{n.time}</span>
+                      <span className="text-[10px] font-mono text-zinc-500">{n.time}</span>
                     </div>
-                    <p className="text-[11px] text-muted line-clamp-2">{n.desc}</p>
+                    <p className="text-[11px] text-zinc-400 line-clamp-2">{n.desc}</p>
                   </div>
                 ))}
               </div>
@@ -168,7 +160,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileMenuToggle }) => {
         {/* User Avatar */}
         <button
           onClick={() => navigate('/settings')}
-          className="relative rounded-full ring-1 ring-border hover:ring-brand-yellow transition-all overflow-hidden"
+          className="relative rounded-full ring-1 ring-white/10 hover:ring-[#A5C4F2] transition-all overflow-hidden cursor-pointer"
         >
           <img
             src={settings.avatar}

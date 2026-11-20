@@ -21,23 +21,23 @@ export const TimelineView: React.FC = () => {
   const handleZoomOut = () => setZoomLevel((z) => Math.max(0.75, z - 0.25));
 
   return (
-    <div className="space-y-3 rounded-2xl bg-[#121212] border border-[#242424] p-4 shadow-xl">
+    <div className="space-y-4 rounded-3xl bg-[#080A10] border border-[#181C26] p-5 shadow-2xl">
       {/* Header */}
-      <div className="flex items-center justify-between pb-2 border-b border-[#1f1f1f]">
-        <div className="flex items-center gap-2">
-          <Film className="w-4 h-4 text-brand-orange" />
-          <h3 className="text-xs font-semibold text-white tracking-wide">Multi-Track Director Timeline</h3>
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#1c1c1c] text-muted border border-[#2b2b2b]">
+      <div className="flex items-center justify-between pb-3 border-b border-[#141822]">
+        <div className="flex items-center gap-2 font-mono text-xs">
+          <Film className="w-4 h-4 text-[#A5C4F2]" />
+          <h3 className="font-semibold text-white tracking-widest uppercase">Multi-Track Director Timeline</h3>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 text-zinc-400 border border-white/10">
             60 FPS Master
           </span>
         </div>
 
         <div className="flex items-center gap-2">
           {/* Zoom controls */}
-          <div className="flex items-center gap-1 bg-[#181818] border border-[#262626] rounded-lg p-0.5">
+          <div className="flex items-center gap-1 capsule-control rounded-full px-2 py-0.5">
             <button
               onClick={handleZoomOut}
-              className="p-1 text-muted hover:text-white rounded hover:bg-white/5"
+              className="p-1 text-zinc-400 hover:text-white rounded-full cursor-pointer"
               title="Zoom Out"
             >
               <ZoomOut className="w-3 h-3" />
@@ -45,7 +45,7 @@ export const TimelineView: React.FC = () => {
             <span className="text-[10px] font-mono px-1 text-zinc-400">{Math.round(zoomLevel * 100)}%</span>
             <button
               onClick={handleZoomIn}
-              className="p-1 text-muted hover:text-white rounded hover:bg-white/5"
+              className="p-1 text-zinc-400 hover:text-white rounded-full cursor-pointer"
               title="Zoom In"
             >
               <ZoomIn className="w-3 h-3" />

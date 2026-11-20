@@ -34,13 +34,13 @@ export const StoryboardEditor: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-4 rounded-2xl bg-[#121212] border border-[#242424] p-4 sm:p-5 shadow-xl">
+    <div className="space-y-4 rounded-3xl bg-[#080A10] border border-[#181C26] p-5 sm:p-7 shadow-2xl">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#1f1f1f]">
-        <div className="flex items-center gap-2.5">
-          <Layers className="w-4 h-4 text-brand-yellow" />
-          <h3 className="text-sm font-semibold text-white tracking-wide">Storyboard Scenes</h3>
-          <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-[#1c1c1c] text-muted border border-[#2d2d2d]">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#141822]">
+        <div className="flex items-center gap-2.5 font-mono text-xs">
+          <Layers className="w-4 h-4 text-[#A5C4F2]" />
+          <h3 className="font-semibold text-white tracking-widest uppercase">Storyboard Scenes</h3>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 text-zinc-400 border border-white/10">
             {scenes.length} Scenes • {totalDuration}s Total
           </span>
         </div>
@@ -49,19 +49,19 @@ export const StoryboardEditor: React.FC = () => {
           <button
             type="button"
             onClick={() => generateStoryboard(studioPrompt)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1a1a1a] hover:bg-[#222222] border border-[#2c2c2c] text-xs text-zinc-300 hover:text-white transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-300 hover:text-white transition-colors font-mono cursor-pointer"
             title="Auto-regenerate scenes from current prompt"
           >
-            <Wand2 className="w-3.5 h-3.5 text-brand-orange" />
+            <Wand2 className="w-3.5 h-3.5 text-[#E5A866]" />
             <span>Re-Synthesize</span>
           </button>
 
           <button
             type="button"
             onClick={addScene}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-yellow text-black font-semibold text-xs shadow-glow-yellow-sm hover:brightness-110 active:scale-95 transition-all"
+            className="pill-action flex items-center gap-1.5 px-4 py-1.5 rounded-full font-semibold text-xs transition-all cursor-pointer"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>Add Scene</span>
           </button>
         </div>

@@ -1,88 +1,94 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Video, MessageSquare, Sparkles, Compass, ArrowUpRight, Flame } from 'lucide-react';
+import { Video, MessageSquare, Sparkles, Compass, ArrowUpRight } from 'lucide-react';
 
 export const QuickActionCards: React.FC = () => {
   const navigate = useNavigate();
 
   const cards = [
     {
-      title: 'Text-to-Video Studio',
+      code: '01',
+      title: 'Studio Engine',
+      subtitle: 'Split-Screen Synthesis',
       description: 'Generate multi-scene animated videos with synchronized camera movements, storyboard cards, and multi-track timelines.',
       icon: Video,
       link: '/studio',
-      badge: 'Director Core',
-      accent: 'yellow',
-      gradient: 'from-brand-yellow/10 via-transparent to-transparent',
+      tag: 'CINEMA',
+      color: '#A5C4F2',
     },
     {
-      title: 'AI Chat & Scripting',
+      code: '02',
+      title: 'AI Director',
+      subtitle: 'Script & Screenplay',
       description: 'Brainstorm screenplay arcs, camera blocking, lighting descriptors, and export scripts straight to video synthesis.',
       icon: MessageSquare,
       link: '/chat',
-      badge: 'Omni-4 Model',
-      accent: 'blue',
-      gradient: 'from-sky-500/10 via-transparent to-transparent',
+      tag: 'OMNI-4',
+      color: '#E5A866',
     },
     {
-      title: 'Creative Playground',
+      code: '03',
+      title: 'Playground',
+      subtitle: 'Generative Physics',
       description: 'Perform A/B prompt variations, test chaos factors and motion parameters side-by-side with instant visual feedback.',
       icon: Sparkles,
       link: '/playground',
-      badge: 'Lab Mode',
-      accent: 'orange',
-      gradient: 'from-brand-orange/10 via-transparent to-transparent',
+      tag: 'LAB MATRIX',
+      color: '#9875D8',
     },
     {
-      title: 'Community Gallery',
+      code: '04',
+      title: 'Showcase',
+      subtitle: 'Global Gallery',
       description: 'Explore trending creations from digital directors across the globe. Inspect prompts, remix styles, and study camera setups.',
       icon: Compass,
       link: '/explore',
-      badge: 'Trending',
-      accent: 'emerald',
-      gradient: 'from-emerald-500/10 via-transparent to-transparent',
+      tag: 'TRENDING',
+      color: '#65C29A',
     },
   ];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {cards.map((card, idx) => {
+      {cards.map((card) => {
         const Icon = card.icon;
         return (
           <div
-            key={idx}
+            key={card.code}
             onClick={() => navigate(card.link)}
-            className="group relative flex flex-col justify-between p-5 rounded-2xl bg-[#121212] hover:bg-[#161616] border border-[#242424] hover:border-brand-yellow/40 cursor-pointer transition-all duration-300 shadow-lg hover:shadow-glow-yellow-sm hover:-translate-y-1 overflow-hidden"
+            className="group relative flex flex-col justify-between p-5 rounded-3xl bg-[#080A10] hover:bg-[#0C0F17] border border-[#181C26] hover:border-white/20 cursor-pointer transition-all duration-300 shadow-xl hover:-translate-y-1 overflow-hidden"
           >
-            {/* Ambient hover gradient */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none`} />
-
-            <div className="relative z-10 space-y-3">
-              {/* Header: Icon + Badge */}
-              <div className="flex items-center justify-between">
-                <div className="p-2.5 rounded-xl bg-[#1a1a1a] border border-[#2d2d2d] group-hover:border-brand-yellow/50 text-white group-hover:text-brand-yellow transition-colors">
-                  <Icon className="w-5 h-5" />
-                </div>
-                <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-[#1e1e1e] border border-[#303030] text-zinc-300">
-                  {card.badge}
+            <div className="space-y-4">
+              {/* Header: Code & Tag */}
+              <div className="flex items-center justify-between font-mono text-xs">
+                <span className="text-zinc-500 font-semibold">{card.code} //</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-zinc-300 tracking-wider">
+                  {card.tag}
                 </span>
               </div>
 
-              {/* Title & Desc */}
-              <div>
-                <h3 className="text-base font-semibold text-white tracking-wide group-hover:text-brand-yellow transition-colors">
+              {/* Icon & Title */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-2 rounded-xl bg-white/5 border border-white/10 text-white group-hover:text-[#A5C4F2] transition-colors">
+                    <Icon className="w-4 h-4" />
+                  </div>
+                </div>
+                <h3 className="text-base font-medium text-white tracking-wide font-sans group-hover:text-[#A5C4F2] transition-colors">
                   {card.title}
                 </h3>
-                <p className="text-xs text-muted mt-1 leading-relaxed line-clamp-3">
-                  {card.description}
-                </p>
+                <span className="text-[11px] font-mono text-zinc-500 block">{card.subtitle}</span>
               </div>
+
+              <p className="text-xs text-[#8A94A6] leading-relaxed line-clamp-3 font-light">
+                {card.description}
+              </p>
             </div>
 
-            {/* Bottom link prompt */}
-            <div className="relative z-10 pt-4 mt-2 border-t border-[#1e1e1e] flex items-center justify-between text-xs font-medium text-zinc-400 group-hover:text-white transition-colors">
-              <span>Open Studio</span>
-              <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-brand-yellow" />
+            {/* Bottom link */}
+            <div className="pt-4 mt-2 border-t border-[#141822] flex items-center justify-between text-xs font-mono text-zinc-400 group-hover:text-white transition-colors">
+              <span>EXPLORE</span>
+              <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 text-zinc-500 group-hover:text-white" />
             </div>
           </div>
         );

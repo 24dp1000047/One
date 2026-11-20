@@ -67,6 +67,12 @@ interface AppState {
   setCommandPaletteOpen: (open: boolean) => void;
   orbState: OrbState;
   setOrbState: (state: OrbState) => void;
+  isMotionPaused: boolean;
+  toggleMotion: () => void;
+  isSoundOn: boolean;
+  toggleSound: () => void;
+  activeSection: string;
+  setActiveSection: (s: string) => void;
 
   // Toasts
   toasts: Toast[];
@@ -154,6 +160,22 @@ export const useAppStore = create<AppState>((set, get) => ({
   setCommandPaletteOpen: (open) => set({ isCommandPaletteOpen: open }),
   orbState: 'idle',
   setOrbState: (state) => set({ orbState: state }),
+  isMotionPaused: false,
+  toggleMotion: () => set((state) => ({ isMotionPaused: !state.isMotionPaused })),
+  isSoundOn: false,
+  toggleSound: () => {
+    set((state) => {
+      const nextSound = !state.isSoundOn;
+      get().addToast({
+        type: 'info',
+        title: nextSound ? 'Sound Synthesizer Active' : 'Sound Muted',
+        message: nextSound ? 'Ambient frequency feedback enabled.' : 'Audio synthesis muted.',
+      });
+      return { isSoundOn: nextSound };
+    });
+  },
+  activeSection: '01',
+  setActiveSection: (s) => set({ activeSection: s }),
 
   // Toasts
   toasts: [],

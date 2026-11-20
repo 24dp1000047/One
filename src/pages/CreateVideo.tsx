@@ -5,7 +5,6 @@ import { VideoPreviewPlayer } from '../components/video/VideoPreviewPlayer';
 import { GenerationStatusOverlay } from '../components/video/GenerationStatusOverlay';
 import { StoryboardEditor } from '../components/video/StoryboardEditor';
 import { TimelineView } from '../components/video/TimelineView';
-import { Sparkles, SlidersHorizontal, Layers, Film } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 
 export const CreateVideo: React.FC = () => {
@@ -14,26 +13,27 @@ export const CreateVideo: React.FC = () => {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-      {/* Studio Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-[#1f1f1f]">
+      {/* Studio Header (Humanon style) */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#141822]">
         <div>
-          <div className="flex items-center gap-2">
-            <Film className="w-5 h-5 text-brand-yellow" />
-            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-wide font-display">
-              Text-to-Video Studio
-            </h1>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-brand-orange/15 text-brand-orange border border-brand-orange/30 font-semibold">
-              Split-Screen Director
+          <div className="flex items-center gap-2 font-mono text-xs">
+            <span className="text-[#A5C4F2] font-semibold">02 //</span>
+            <span className="text-zinc-500 uppercase tracking-widest">SYNTHESIS ENGINE</span>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 text-zinc-300 border border-white/10">
+              V4.0.9 LUMEN
             </span>
           </div>
-          <p className="text-xs text-muted mt-1">
+          <h1 className="text-2xl sm:text-3xl font-display font-medium text-white tracking-tight mt-1">
+            Text-to-Video Studio
+          </h1>
+          <p className="text-xs text-[#8A94A6] mt-1 font-light">
             Compose high-velocity prompts, calibrate optical vectors, and render 60fps cinematic sequences.
           </p>
         </div>
 
         <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
-          <span className="w-2 h-2 rounded-full bg-emerald-400" />
-          <span>Lumen 4K Render Engine Active</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          <span>4K LUMEN CORE ACTIVE</span>
         </div>
       </div>
 
@@ -47,7 +47,7 @@ export const CreateVideo: React.FC = () => {
 
         {/* Right Column: Generation Status & Video Preview (5 cols on desktop) */}
         <div className="lg:col-span-5 space-y-5 sticky top-20">
-          {/* Generation Progress Overlay (appears during active generation) */}
+          {/* Generation Progress Overlay */}
           {generationStatus !== 'idle' && <GenerationStatusOverlay />}
 
           {/* Interactive Video Player */}

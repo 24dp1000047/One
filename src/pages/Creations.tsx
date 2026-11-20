@@ -72,25 +72,26 @@ export const Creations: React.FC = () => {
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#1f1f1f]">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#141822]">
         <div>
-          <div className="flex items-center gap-2">
-            <FolderKanban className="w-5 h-5 text-purple-400" />
-            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-wide font-display">
-              My Creations Archive
-            </h1>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/30 font-semibold">
-              {projects.length} Videos
+          <div className="flex items-center gap-2 font-mono text-xs">
+            <span className="text-[#A5C4F2] font-semibold">06 //</span>
+            <span className="text-zinc-500 uppercase tracking-widest">ARCHIVE</span>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 text-zinc-300 border border-white/10">
+              {projects.length} VIDEOS
             </span>
           </div>
-          <p className="text-xs text-muted mt-1">
+          <h1 className="text-2xl sm:text-3xl font-display font-medium text-white tracking-tight mt-1">
+            My Creations Archive
+          </h1>
+          <p className="text-xs text-[#8A94A6] mt-1 font-light">
             Browse, preview, and download your rendered animations and project storyboards.
           </p>
         </div>
 
         <button
           onClick={() => navigate('/studio')}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-yellow text-black font-semibold text-xs shadow-glow-yellow-sm hover:brightness-110 active:scale-95 transition-all"
+          className="pill-action flex items-center gap-2 px-5 py-2.5 rounded-full font-sans font-semibold text-xs tracking-wide cursor-pointer"
         >
           <Film className="w-3.5 h-3.5" />
           <span>New Studio Project</span>

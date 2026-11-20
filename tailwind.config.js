@@ -8,54 +8,53 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#090909',
+        background: '#040608',
         surface: {
-          DEFAULT: '#151515',
-          card: '#121212',
-          hover: '#1c1c1c',
-          active: '#242424',
-          subtle: '#0e0e0e',
+          DEFAULT: '#0A0D14',
+          card: '#080A10',
+          hover: '#121622',
+          active: '#181E2E',
+          subtle: '#06080D',
         },
         border: {
-          DEFAULT: '#292929',
-          subtle: '#1f1f1f',
-          bright: '#3b3b3b',
+          DEFAULT: '#181C26',
+          subtle: '#11151E',
+          bright: '#262D3D',
         },
         brand: {
           yellow: '#FFD600',
-          'yellow-light': '#FFE24D',
-          'yellow-glow': 'rgba(255, 214, 0, 0.25)',
+          gold: '#E5A866',
+          'gold-light': '#F3C999',
           orange: '#FF7A1A',
-          'orange-light': '#FF9647',
-          'orange-glow': 'rgba(255, 122, 26, 0.25)',
+          ice: '#A5C4F2',
+          'ice-light': '#DCE7FA',
+          violet: '#9875D8',
         },
         muted: {
-          DEFAULT: '#999999',
-          dark: '#666666',
-          light: '#b3b3b3',
+          DEFAULT: '#8A94A6',
+          dark: '#586274',
+          light: '#B2BCCD',
         }
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+        mono: ['JetBrains Mono', 'Fira Code', 'Courier New', 'monospace'],
         display: ['Space Grotesk', 'Inter', 'sans-serif'],
       },
       boxShadow: {
-        'glow-yellow': '0 0 25px -3px rgba(255, 214, 0, 0.35)',
+        'glow-pill': '0 0 30px -4px rgba(165, 196, 242, 0.45)',
+        'glow-gold': '0 0 25px -4px rgba(229, 168, 102, 0.4)',
         'glow-yellow-sm': '0 0 12px 0px rgba(255, 214, 0, 0.25)',
-        'glow-orange': '0 0 25px -3px rgba(255, 122, 26, 0.35)',
-        'glow-orange-sm': '0 0 12px 0px rgba(255, 122, 26, 0.25)',
         'inner-glow': 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.08)',
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'orbit-spin': 'spin 18s linear infinite',
-        'glow-pulse': 'glowPulse 2.5s ease-in-out infinite',
+        'equalizer': 'equalizer 0.8s ease-in-out infinite alternate',
       },
       keyframes: {
-        glowPulse: {
-          '0%, 100%': { opacity: '0.4', transform: 'scale(1)' },
-          '50%': { opacity: '0.8', transform: 'scale(1.05)' },
+        equalizer: {
+          '0%': { height: '30%' },
+          '100%': { height: '100%' },
         }
       }
     },

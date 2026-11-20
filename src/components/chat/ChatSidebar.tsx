@@ -48,29 +48,29 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({ onCloseMobile }) => {
   );
 
   return (
-    <div className="flex flex-col h-full w-full bg-[#0d0d0d] border-r border-[#222222]">
+    <div className="flex flex-col h-full w-full bg-[#05070C] border-r border-[#141822]">
       {/* Header with New Chat */}
-      <div className="p-3.5 space-y-3 border-b border-[#1f1f1f]">
+      <div className="p-4 space-y-3 border-b border-[#141822]">
         <button
           onClick={() => {
             createConversation();
             onCloseMobile?.();
           }}
-          className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl bg-brand-yellow text-black font-semibold text-xs tracking-wide shadow-glow-yellow-sm hover:brightness-110 active:scale-98 transition-all"
+          className="pill-action flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-full font-sans font-semibold text-xs tracking-wide cursor-pointer"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-4 h-4 stroke-[2.5]" />
           <span>New Cinematic Chat</span>
         </button>
 
         {/* Search Input */}
         <div className="relative">
-          <Search className="w-3.5 h-3.5 text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search conversations..."
-            className="w-full bg-[#151515] border border-[#242424] focus:border-brand-yellow/50 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-muted focus:outline-none"
+            className="w-full bg-[#080A10] border border-[#181C26] focus:border-[#A5C4F2]/50 rounded-full pl-9 pr-3 py-1.5 text-xs text-white placeholder:text-zinc-600 focus:outline-none font-mono"
           />
         </div>
       </div>

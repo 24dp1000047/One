@@ -49,24 +49,24 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ onOpenSidebarMobile }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#090909]">
+    <div className="flex flex-col h-full bg-[#040608]">
       {/* Chat Area Header */}
-      <div className="flex items-center justify-between h-14 px-4 border-b border-[#1f1f1f] bg-[#0c0c0c]/80 backdrop-blur-md">
+      <div className="flex items-center justify-between h-14 px-5 border-b border-[#141822] bg-[#05070C]/90 backdrop-blur-md">
         <div className="flex items-center gap-2.5 min-w-0">
           <button
             onClick={onOpenSidebarMobile}
-            className="p-1.5 text-muted hover:text-white rounded-lg lg:hidden"
+            className="p-1.5 text-zinc-400 hover:text-white rounded-lg lg:hidden cursor-pointer"
             title="Toggle chat history"
           >
             <Menu className="w-4 h-4" />
           </button>
 
-          <div className="flex flex-col min-w-0">
-            <h2 className="text-xs sm:text-sm font-semibold text-white tracking-wide truncate">
+          <div className="flex flex-col min-w-0 font-mono">
+            <h2 className="text-xs sm:text-sm font-semibold text-white tracking-widest uppercase truncate">
               {activeConv ? activeConv.title : 'Cinematic Scripting Session'}
             </h2>
-            <span className="text-[10px] text-muted font-mono truncate">
-              {activeConv?.messages.length || 0} messages • Active Session
+            <span className="text-[10px] text-zinc-500 truncate">
+              {activeConv?.messages.length || 0} MESSAGES • 03 // DIRECTOR DIALOGUE
             </span>
           </div>
         </div>
@@ -79,7 +79,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ onOpenSidebarMobile }) => {
               setSelectedModel(e.target.value);
               addToast({ type: 'info', title: 'Model Switched', message: e.target.value });
             }}
-            className="bg-[#161616] border border-[#2b2b2b] text-zinc-200 text-xs rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-brand-yellow/50 font-mono cursor-pointer"
+            className="bg-[#080A10] border border-[#181C26] text-zinc-200 text-xs rounded-full px-3 py-1.5 focus:outline-none focus:border-[#A5C4F2] font-mono cursor-pointer"
           >
             <option value="ONe Omni-4 Cinema">ONe Omni-4 Cinema (Default)</option>
             <option value="ONe WorldBuilder 3D">ONe WorldBuilder 3D</option>
@@ -88,7 +88,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ onOpenSidebarMobile }) => {
 
           <button
             onClick={handleExportChat}
-            className="p-1.5 text-muted hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+            className="p-1.5 text-zinc-400 hover:text-white rounded-full capsule-control transition-colors cursor-pointer"
             title="Export conversation"
           >
             <Download className="w-4 h-4" />

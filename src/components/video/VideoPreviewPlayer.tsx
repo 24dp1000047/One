@@ -112,7 +112,7 @@ export const VideoPreviewPlayer: React.FC<VideoPreviewPlayerProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`group relative w-full overflow-hidden rounded-2xl bg-black border border-[#242424] shadow-2xl flex flex-col justify-end select-none ${getAspectClass()}`}
+      className={`group relative w-full overflow-hidden rounded-3xl bg-[#040608] border border-[#181C26] shadow-2xl flex flex-col justify-end select-none ${getAspectClass()}`}
     >
       {/* Video Visual Stage */}
       <div className="absolute inset-0 overflow-hidden">
@@ -182,9 +182,9 @@ export const VideoPreviewPlayer: React.FC<VideoPreviewPlayerProps> = ({
         <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
           <div
             onClick={togglePlay}
-            className="pointer-events-auto cursor-pointer w-16 h-16 rounded-full bg-brand-yellow text-black flex items-center justify-center shadow-glow-yellow hover:scale-110 active:scale-95 transition-all"
+            className="pointer-events-auto cursor-pointer w-16 h-16 rounded-full pill-action flex items-center justify-center transition-all hover:scale-105 active:scale-95"
           >
-            <Play className="w-7 h-7 fill-black ml-1" />
+            <Play className="w-6 h-6 fill-black ml-0.5" />
           </div>
         </div>
       )}

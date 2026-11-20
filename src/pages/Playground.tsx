@@ -131,25 +131,26 @@ export const Playground: React.FC = () => {
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#1f1f1f]">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#141822]">
         <div>
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-brand-orange" />
-            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-wide font-display">
-              Creative Playground
-            </h1>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-brand-yellow/15 text-brand-yellow border border-brand-yellow/30 font-semibold">
-              A/B Lab
+          <div className="flex items-center gap-2 font-mono text-xs">
+            <span className="text-[#A5C4F2] font-semibold">04 //</span>
+            <span className="text-zinc-500 uppercase tracking-widest">A/B LAB MATRIX</span>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 text-zinc-300 border border-white/10">
+              SIMULATED LATENCY 14MS
             </span>
           </div>
-          <p className="text-xs text-muted mt-1">
+          <h1 className="text-2xl sm:text-3xl font-display font-medium text-white tracking-tight mt-1">
+            Creative Playground
+          </h1>
+          <p className="text-xs text-[#8A94A6] mt-1 font-light">
             Stress-test prompts, tweak physics parameters, and generate 3 side-by-side variations in real-time.
           </p>
         </div>
 
         <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
-          <Zap className="w-4 h-4 text-brand-yellow" />
-          <span>Zero GPU Overhead (Simulated Latency 14ms)</span>
+          <Zap className="w-4 h-4 text-[#E5A866]" />
+          <span>ZERO GPU OVERHEAD</span>
         </div>
       </div>
 

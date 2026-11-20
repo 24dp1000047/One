@@ -77,25 +77,26 @@ export const Explore: React.FC = () => {
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#1f1f1f]">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#141822]">
         <div>
-          <div className="flex items-center gap-2">
-            <Compass className="w-5 h-5 text-emerald-400" />
-            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-wide font-display">
-              Explore Community Showcase
-            </h1>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold">
-              Trending Hub
+          <div className="flex items-center gap-2 font-mono text-xs">
+            <span className="text-[#A5C4F2] font-semibold">05 //</span>
+            <span className="text-zinc-500 uppercase tracking-widest">SHOWCASE</span>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 text-zinc-300 border border-white/10">
+              COMMUNITY ARCHIVE
             </span>
           </div>
-          <p className="text-xs text-muted mt-1">
+          <h1 className="text-2xl sm:text-3xl font-display font-medium text-white tracking-tight mt-1">
+            Explore Community Showcase
+          </h1>
+          <p className="text-xs text-[#8A94A6] mt-1 font-light">
             Discover community-crafted animated videos, inspect lighting prompts, and remix scenes with 1-click.
           </p>
         </div>
 
         <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
-          <span className="w-2 h-2 rounded-full bg-brand-yellow" />
-          <span>Curated Daily by ONe Editorial</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#E5A866]" />
+          <span>CURATED DAILY BY ONe EDITORIAL</span>
         </div>
       </div>
 
