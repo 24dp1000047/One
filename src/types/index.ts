@@ -183,3 +183,24 @@ export interface NodeGraphItem {
   thumbnail?: string;
   data: Record<string, any>;
 }
+
+// --- Text-to-Image Generation Types ---
+export type ImageAspectRatio = '1:1' | '16:9' | '9:16' | '4:5' | '21:9';
+export type ImageModel = 'ONᵉ Imagen-3 Ultra' | 'Flux.1 Pro Precision' | 'Midjourney v6.1 Matrix' | 'SDXL Turbo 8K';
+
+export interface GeneratedImage {
+  id: string;
+  prompt: string;
+  negativePrompt?: string;
+  url: string;
+  aspectRatio: ImageAspectRatio;
+  resolution: string;
+  style: string;
+  model: ImageModel;
+  seed: number;
+  cfgScale: number;
+  steps: number;
+  createdAt: string;
+  isFavorite?: boolean;
+  upscaled?: boolean;
+}

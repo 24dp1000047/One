@@ -108,7 +108,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
   };
 
   return (
-    <div className="relative p-3 sm:p-5 bg-[#040608] border-t border-[#141822] space-y-2">
+    <div className="relative p-3 sm:p-5 bg-[#171A21] border-t border-[#2A475E]/70 space-y-2">
       {/* Voice Recording Active Overlay */}
       {isRecording && (
         <div className="flex items-center justify-between p-3 rounded-2xl bg-[#E5A866]/15 border border-[#E5A866]/40 text-[#E5A866] animate-pulse">
@@ -146,9 +146,9 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
           {attachments.map((att, idx) => (
             <div
               key={idx}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0E121A] border border-[#1F2533] text-xs text-zinc-300 font-mono"
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1B2838] border border-[#2A475E] text-xs text-zinc-300 font-mono"
             >
-              <Paperclip className="w-3 h-3 text-[#A5C4F2]" />
+              <Paperclip className="w-3 h-3 text-[#66C0F4]" />
               <span className="truncate max-w-[150px]">{att.name}</span>
               <button
                 onClick={() => setAttachments((prev) => prev.filter((_, i) => i !== idx))}
@@ -162,7 +162,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
       )}
 
       {/* Main Composer Box */}
-      <div className="relative rounded-3xl bg-[#080A10] border border-[#181C26] focus-within:border-[#A5C4F2]/50 transition-colors shadow-2xl">
+      <div className="relative rounded-3xl bg-[#1B2838] border border-[#2A475E] focus-within:border-[#66C0F4] transition-colors shadow-2xl">
         <textarea
           rows={2}
           value={text}
@@ -170,11 +170,11 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
           onKeyDown={handleKeyDown}
           placeholder="Ask for scene scripts, camera directions, lighting parameters or ideas..."
           disabled={disabled || isRecording}
-          className="w-full bg-transparent px-4 py-3.5 text-sm text-white placeholder:text-zinc-600 focus:outline-none resize-none leading-relaxed font-sans"
+          className="w-full bg-transparent px-4 py-3.5 text-sm text-white placeholder:text-zinc-500 focus:outline-none resize-none leading-relaxed font-sans"
         />
 
         {/* Toolbar */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-t border-[#141822] bg-[#06080E]/90 rounded-b-3xl">
+        <div className="flex items-center justify-between px-4 py-2.5 border-t border-[#2A475E] bg-[#171D25] rounded-b-3xl">
           <div className="flex items-center gap-2">
             {/* Attachment dropdown button */}
             <div className="relative">

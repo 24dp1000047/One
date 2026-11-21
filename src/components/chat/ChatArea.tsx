@@ -49,9 +49,9 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ onOpenSidebarMobile }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#040608]">
+    <div className="flex flex-col h-full bg-[#171A21]">
       {/* Chat Area Header */}
-      <div className="flex items-center justify-between h-14 px-5 border-b border-[#141822] bg-[#05070C]/90 backdrop-blur-md">
+      <div className="flex items-center justify-between h-14 px-5 border-b border-[#2A475E]/70 bg-[#171D25] backdrop-blur-md">
         <div className="flex items-center gap-2.5 min-w-0">
           <button
             onClick={onOpenSidebarMobile}

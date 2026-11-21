@@ -1,10 +1,8 @@
 import React from 'react';
-import { PromptEditor } from '../components/video/PromptEditor';
-import { StudioControls } from '../components/video/StudioControls';
-import { VideoPreviewPlayer } from '../components/video/VideoPreviewPlayer';
-import { GenerationStatusOverlay } from '../components/video/GenerationStatusOverlay';
-import { StoryboardEditor } from '../components/video/StoryboardEditor';
-import { TimelineView } from '../components/video/TimelineView';
+import { ImagePromptEditor } from '../components/image/ImagePromptEditor';
+import { ImageControls } from '../components/image/ImageControls';
+import { ImageCanvasPreview } from '../components/image/ImageCanvasPreview';
+import { ImageHistoryGallery } from '../components/image/ImageHistoryGallery';
 import { Director3DViewport } from '../components/video/Director3DViewport';
 import { SpatialNodeCanvas } from '../components/video/SpatialNodeCanvas';
 import { ColorGradingSuite } from '../components/video/ColorGradingSuite';
@@ -12,27 +10,23 @@ import { SoundDesignStudio } from '../components/video/SoundDesignStudio';
 import { useAppStore } from '../store/useAppStore';
 import { StudioViewMode } from '../types';
 import { 
-  Sliders, 
+  Image as ImageIcon, 
   Move3d, 
   Layers, 
   Palette, 
-  Radio, 
   Sparkles, 
-  Film, 
-  ArrowUpRight 
+  Wand2 
 } from 'lucide-react';
 
 export const CreateVideo: React.FC = () => {
-  const activeGeneratedVideo = useAppStore((state) => state.activeGeneratedVideo);
-  const generationStatus = useAppStore((state) => state.generationStatus);
   const studioMode = useAppStore((state) => state.studioMode);
   const setStudioMode = useAppStore((state) => state.setStudioMode);
 
   const tabs: { id: StudioViewMode; label: string; icon: any; badge?: string }[] = [
-    { id: 'split', label: 'Split Studio', icon: Sliders },
-    { id: 'director3d', label: '3D Director Rig', icon: Move3d, badge: 'Three.js' },
-    { id: 'nodes', label: 'Spatial Canvas', icon: Layers, badge: 'Flow' },
-    { id: 'colorSound', label: 'Color & Sound Lab', icon: Palette, badge: 'Audio' },
+    { id: 'split', label: 'Image Studio', icon: ImageIcon, badge: 'Core' },
+    { id: 'director3d', label: '3D Spatial Staging', icon: Move3d, badge: 'Three.js' },
+    { id: 'nodes', label: 'Concept Canvas', icon: Layers, badge: 'Flow' },
+    { id: 'colorSound', label: 'Color Lab & Sound', icon: Palette, badge: 'LUTs' },
   ];
 
   return (
@@ -42,16 +36,16 @@ export const CreateVideo: React.FC = () => {
         <div>
           <div className="flex items-center gap-2 font-mono text-xs">
             <span className="text-[#A5C4F2] font-semibold">02 //</span>
-            <span className="text-zinc-500 uppercase tracking-widest">MULTIMODAL SYNTHESIS SUITE</span>
+            <span className="text-zinc-500 uppercase tracking-widest">TEXT-TO-IMAGE SYNTHESIS ENGINE</span>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 text-zinc-300 border border-white/10">
-              V4.2 SPATIAL
+              V4.5 IMAGEN-3 ULTRA
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-display font-medium text-white tracking-tight mt-1">
-            Director's Creative Studio
+            Text-to-Image Studio
           </h1>
           <p className="text-xs text-[#8A94A6] mt-1 font-light">
-            Compose prompts, calibrate 3D camera vectors in Three.js, map spatial node stories, and grade live color & procedural audio stems.
+            Synthesize high-fidelity concept art, quad variations, 4K upscaling, inpainting masks, and live spectral color grading.
           </p>
         </div>
 
@@ -87,59 +81,53 @@ export const CreateVideo: React.FC = () => {
         </div>
       </div>
 
-      {/* MODE 1: SPLIT STUDIO VIEW */}
+      {/* MODE 1: CORE TEXT-TO-IMAGE STUDIO */}
       {studioMode === 'split' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Left Column: Prompt & Controls */}
+            {/* Left Column: Prompt & Controls (7 cols on desktop) */}
             <div className="lg:col-span-7 space-y-5">
-              <PromptEditor />
-              <StudioControls />
+              <ImagePromptEditor />
+              <ImageControls />
             </div>
 
-            {/* Right Column: Generation Status & Video Preview */}
+            {/* Right Column: High-Res Interactive Canvas Preview (5 cols on desktop) */}
             <div className="lg:col-span-5 space-y-5 sticky top-20">
-              {generationStatus !== 'idle' && <GenerationStatusOverlay />}
-              <VideoPreviewPlayer posterUrl={activeGeneratedVideo?.thumbnail} />
+              <ImageCanvasPreview />
             </div>
           </div>
 
-          {/* Storyboard with Editable Scene Cards */}
+          {/* Bottom Section: Image History & Output Matrix */}
           <div className="pt-2">
-            <StoryboardEditor />
-          </div>
-
-          {/* Multi-Track Timeline */}
-          <div className="pt-2">
-            <TimelineView />
+            <ImageHistoryGallery />
           </div>
         </div>
       )}
 
-      {/* MODE 2: INTERACTIVE 3D VIRTUAL DIRECTOR RIG */}
+      {/* MODE 2: INTERACTIVE 3D SPATIAL STAGING */}
       {studioMode === 'director3d' && (
         <div className="space-y-6">
           <Director3DViewport />
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-6">
-              <PromptEditor />
+              <ImagePromptEditor />
             </div>
             <div className="lg:col-span-6">
-              <VideoPreviewPlayer posterUrl={activeGeneratedVideo?.thumbnail} />
+              <ImageCanvasPreview />
             </div>
           </div>
         </div>
       )}
 
-      {/* MODE 3: SPATIAL STORYBOARD NODE CANVAS */}
+      {/* MODE 3: SPATIAL CONCEPT CANVAS */}
       {studioMode === 'nodes' && (
         <div className="space-y-6">
           <SpatialNodeCanvas />
-          <TimelineView />
+          <ImageHistoryGallery />
         </div>
       )}
 
-      {/* MODE 4: COLOR GRADING & PROCEDURAL SOUND LAB */}
+      {/* MODE 4: COLOR LAB & AMBIENT SOUND */}
       {studioMode === 'colorSound' && (
         <div className="space-y-6">
           <ColorGradingSuite />

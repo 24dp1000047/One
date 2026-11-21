@@ -1,4 +1,106 @@
-import { VideoProject, Conversation, InspirationItem, Scene } from '../types';
+import { VideoProject, Conversation, InspirationItem, Scene, GeneratedImage } from '../types';
+
+export const IMAGE_STYLES = [
+  {
+    id: 'cinematic',
+    name: 'Cinematic 35mm',
+    desc: 'Photorealistic anamorphic capture, natural bokeh, 8K Arri Alexa 65',
+    color: '#A5C4F2',
+  },
+  {
+    id: 'cyberpunk',
+    name: 'Cyberpunk Concept',
+    desc: 'Holographic kanji, obsidian shadows, neon amber rim highlights',
+    color: '#E5A866',
+  },
+  {
+    id: 'anime',
+    name: 'Anime Neo-Tokyo',
+    desc: 'Makoto Shinkai style, hand-drawn clouds, vibrant golden hour illumination',
+    color: '#38BDF8',
+  },
+  {
+    id: 'digital-oil',
+    name: 'Digital Oil Painting',
+    desc: 'Rich expressive impasto brushstrokes, dramatic chiaroscuro lighting',
+    color: '#F59E0B',
+  },
+  {
+    id: 'surreal-3d',
+    name: 'Hyper-Surreal 3D',
+    desc: 'Octane Render, metaphysical geometry, iridescent chrome materials',
+    color: '#A855F7',
+  },
+  {
+    id: 'brutalism',
+    name: 'Architectural Brutalism',
+    desc: 'Monolithic concrete structures, fog atmosphere, geometric shadows',
+    color: '#10B981',
+  },
+];
+
+export const INITIAL_GENERATED_IMAGES: GeneratedImage[] = [
+  {
+    id: 'img-init-1',
+    prompt: 'Atmospheric courier standing in torrential rain in Neo-Shinjuku 2099, reflection of amber holographic kanji on wet obsidian pavement, 35mm anamorphic lens, 8K.',
+    negativePrompt: 'blurry, oversaturated, deformed hands, low resolution',
+    url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1400&q=80',
+    aspectRatio: '16:9',
+    resolution: '1344x768',
+    style: 'Cyberpunk Concept',
+    model: 'ONᵉ Imagen-3 Ultra',
+    seed: 849204,
+    cfgScale: 7.5,
+    steps: 35,
+    createdAt: 'Just now',
+    isFavorite: true,
+  },
+  {
+    id: 'img-init-2',
+    prompt: 'A cybernetic astronaut floating outside an orbital space elevator, earth blue marble reflection on gold visor, cinematic 35mm film grain, 8K.',
+    negativePrompt: 'cartoon, low quality, artifacts',
+    url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1400&q=80',
+    aspectRatio: '1:1',
+    resolution: '1024x1024',
+    style: 'Cinematic 35mm',
+    model: 'Flux.1 Pro Precision',
+    seed: 194820,
+    cfgScale: 8.0,
+    steps: 40,
+    createdAt: '2h ago',
+    isFavorite: false,
+  },
+  {
+    id: 'img-init-3',
+    prompt: 'Colossal brutalist concrete monolith floating silently above a misty canyon at twilight, atmospheric volumetric rays, architectural photography.',
+    negativePrompt: 'noise, blurry, low res',
+    url: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1400&q=80',
+    aspectRatio: '16:9',
+    resolution: '1344x768',
+    style: 'Architectural Brutalism',
+    model: 'ONᵉ Imagen-3 Ultra',
+    seed: 559102,
+    cfgScale: 7.0,
+    steps: 30,
+    createdAt: '4h ago',
+    isFavorite: true,
+  },
+  {
+    id: 'img-init-4',
+    prompt: 'Surreal iridescent fluid chrome sculpture twisting into organic fractal ribbons in a dark void, golden ambient reflections, Octane 3D render.',
+    negativePrompt: 'flat, dull, artifacts',
+    url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1400&q=80',
+    aspectRatio: '1:1',
+    resolution: '1024x1024',
+    style: 'Hyper-Surreal 3D',
+    model: 'Midjourney v6.1 Matrix',
+    seed: 923841,
+    cfgScale: 9.0,
+    steps: 45,
+    createdAt: 'Yesterday',
+    isFavorite: false,
+  },
+];
 
 export const VIDEO_STYLES = [
   {
@@ -225,7 +327,7 @@ export const INITIAL_PROJECTS: VideoProject[] = [
 export const INITIAL_CONVERSATIONS: Conversation[] = [
   {
     id: 'conv-1',
-    title: 'Cyberpunk Shinjuku Script & Storyboard',
+    title: 'Cyberpunk Shinjuku Image Concept',
     createdAt: '2 hours ago',
     updatedAt: '10 mins ago',
     pinned: true,
@@ -233,7 +335,7 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
       {
         id: 'm-1',
         role: 'user',
-        content: 'I want to craft an animated video concept for a futuristic cyberpunk city. Can you give me an opening hook and a 3-scene camera plan?',
+        content: 'I want to generate an ultra-high-resolution cinematic concept image of a futuristic cyberpunk city. Can you engineer the perfect prompt with 35mm lighting, optical lens parameters, and color palette?',
         timestamp: '10:45 AM',
       },
       {
@@ -241,45 +343,40 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
         role: 'assistant',
         model: 'Thinking Machines Inkling',
         jevDecision: {
-          intent: 'creative_writing',
+          intent: 'prompt_engineering',
           complexity: 'complex',
-          confidence: 0.96,
+          confidence: 0.98,
           reasoningBudget: 'high',
-          latencyMs: 64,
+          latencyMs: 52,
         },
         suggestedFollowUps: [
-          'Can you break this into camera motion prompts for each scene?',
-          'What audio and sound design cues would match this sequence?',
-          'Can we introduce a secondary antagonist character in Scene 2?',
+          'Can you shift the lighting to golden hour sunset?',
+          'What negative prompt ensures clean hand anatomy?',
+          'Can we generate a portrait orientation for mobile wallpaper?',
         ],
-        content: `Here is a high-impact opening concept tailored for **ONᵉ Studio** video generation:
+        content: `Here is a master prompt recipe engineered for **ONᵉ Imagen-3 Ultra** text-to-image synthesis:
 
-### Title: **Neon Odyssey: Shinjuku 2099**
+### Concept: **Neon Odyssey: Shinjuku 2099**
 
-**Visual Hook:**  
-Rain descends through layers of holographic advertisements, each droplet catching amber and cyan refractions before striking the visor of an atmospheric courier.
+**Visual Composition:**  
+A solitary cybernetic courier standing in rain-drenched Neo-Shinjuku, surrounded by towering holographic amber kanji monoliths whose reflections bleed into wet obsidian asphalt.
 
 \`\`\`yaml
-Scene 1:
-  Duration: 4.0s
-  Camera: Low angle 35mm, slow orbit
-  Focus: Water ripples reflecting towering amber holographic kanji symbols
-Scene 2:
-  Duration: 4.0s
-  Camera: Medium tracking, lateral pan right
-  Focus: Courier in modular trench coat cutting through rising sewer steam
-Scene 3:
-  Duration: 4.0s
-  Camera: Cinematic crane ascending
-  Focus: City reveal showing transit sky-tubes and megastructure spires
+Master Image Recipe:
+  Prompt: "Cinematic 8K master capture of courier standing in rain-slicked Neo-Shinjuku 2099, amber holographic kanji reflections on wet obsidian pavement, 35mm anamorphic Arri Alexa 65, volumetric steam vents, shallow depth of field, sharp focus, ray-traced reflections"
+  Negative: "blurry, low resolution, deformed hands, oversaturated, text watermark, jpeg artifacts, plastic skin"
+  Aspect Ratio: "16:9"
+  Model: "ONᵉ Imagen-3 Ultra"
+  CFG Scale: 7.5
+  Sampling Steps: 35
 \`\`\`
 
-Would you like to send this master prompt directly into the **Text-to-Video Studio** to synthesize the storyboard?`,
+Click **Send to Image Studio** below to synthesize this masterpiece with active 8K neural sampling.`,
         timestamp: '10:46 AM',
         suggestedAction: {
-          label: 'Send to Video Studio',
+          label: 'Send to Image Studio',
           actionType: 'open-studio',
-          payload: 'A cybernetic traveler walking through a rain-soaked neon canyon in futuristic Tokyo, reflections of towering holographic billboards rippling on wet asphalt.',
+          payload: 'Cinematic 8K master capture of courier standing in rain-slicked Neo-Shinjuku 2099, amber holographic kanji reflections on wet obsidian pavement, 35mm anamorphic Arri Alexa 65, volumetric steam vents, shallow depth of field, sharp focus, ray-traced reflections',
         },
       },
       {

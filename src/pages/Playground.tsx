@@ -124,7 +124,7 @@ export const Playground: React.FC = () => {
     addToast({
       type: 'success',
       title: 'Promoted to Studio',
-      message: `Loading "${variation.title}" into Text-to-Video Studio.`,
+      message: `Loading "${variation.title}" into Text-to-Image Studio.`,
     });
     navigate('/studio');
   };
@@ -320,7 +320,7 @@ export const Playground: React.FC = () => {
                   onClick={() => handlePromoteToStudio(v)}
                   className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-[#1c1c1c] hover:bg-brand-yellow text-zinc-200 hover:text-black font-semibold text-xs tracking-wide transition-all border border-[#2d2d2d] hover:border-transparent group"
                 >
-                  <span>Promote to Final Video Studio</span>
+                  <span>Promote to Image Studio</span>
                   <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
                 </button>
               </div>

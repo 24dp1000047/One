@@ -1,17 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { 
   Copy, 
   Check, 
   RotateCcw, 
-  ArrowRight, 
-  Video, 
   Bot, 
   User, 
   Code2, 
   Sparkles,
-  Move3d,
-  Layers,
   Zap,
   ChevronDown,
   ChevronUp
@@ -28,12 +23,9 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
   message,
   isLastAssistantMessage = false,
 }) => {
-  const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [showJevDetails, setShowJevDetails] = useState(true);
   const settings = useAppStore((state) => state.settings);
-  const setStudioPrompt = useAppStore((state) => state.setStudioPrompt);
-  const setStudioMode = useAppStore((state) => state.setStudioMode);
   const regenerateLastMessage = useAppStore((state) => state.regenerateLastMessage);
   const sendMessage = useAppStore((state) => state.sendMessage);
   const addToast = useAppStore((state) => state.addToast);
@@ -45,17 +37,6 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
     setCopied(true);
     addToast({ type: 'success', title: 'Copied to clipboard' });
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleSendToStudio = (promptPayload?: string) => {
-    const text = promptPayload || message.content;
-    setStudioPrompt(text);
-    addToast({
-      type: 'success',
-      title: 'Prompt Sent to Studio',
-      message: 'Opening Text-to-Video Studio with this script.',
-    });
-    navigate('/studio');
   };
 
   // Helper to format simulated markdown text (headers, bold, code blocks, lists)
@@ -413,54 +394,6 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
         )}
 
         {/* Assistant Direct Actions Row */}
-        {!isUser && (
-          <div className="pt-2 flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => handleSendToStudio(message.suggestedAction?.payload)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#E5A866]/20 hover:bg-[#E5A866]/30 text-[#E5A866] border border-[#E5A866]/40 font-medium text-xs transition-colors cursor-pointer"
-            >
-              <Video className="w-3.5 h-3.5" />
-              <span>Send to Studio</span>
-              <ArrowRight className="w-3 h-3" />
-            </button>
-
-            <button
-              onClick={() => {
-                const text = message.suggestedAction?.payload || message.content;
-                setStudioPrompt(text);
-                setStudioMode('director3d');
-                addToast({
-                  type: 'info',
-                  title: 'Opening 3D Director',
-                  message: 'Calibrating 3D camera rig for this scene.',
-                });
-                navigate('/studio');
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#A5C4F2]/15 hover:bg-[#A5C4F2]/25 text-[#A5C4F2] border border-[#A5C4F2]/30 font-medium text-xs transition-colors cursor-pointer"
-            >
-              <Move3d className="w-3.5 h-3.5" />
-              <span>Direct in 3D Rig</span>
-            </button>
-
-            <button
-              onClick={() => {
-                const text = message.suggestedAction?.payload || message.content;
-                setStudioPrompt(text);
-                setStudioMode('nodes');
-                addToast({
-                  type: 'info',
-                  title: 'Opening Spatial Canvas',
-                  message: 'Mapped scene sequence onto creative board.',
-                });
-                navigate('/studio');
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 font-medium text-xs transition-colors cursor-pointer"
-            >
-              <Layers className="w-3.5 h-3.5" />
-              <span>Map to Nodes</span>
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

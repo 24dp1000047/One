@@ -29,14 +29,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileMenuToggle }) => {
   // Derive title from pathname
   const getPageInfo = () => {
     const path = location.pathname;
-    if (path === '/') return { title: 'Potential', code: '01' };
-    if (path.startsWith('/studio')) return { title: 'Studio Engine', code: '02' };
-    if (path.startsWith('/chat')) return { title: 'Director Chat', code: '03' };
-    if (path.startsWith('/playground')) return { title: 'Playground', code: '04' };
-    if (path.startsWith('/explore')) return { title: 'Explore Showcase', code: '05' };
-    if (path.startsWith('/creations')) return { title: 'My Creations', code: '06' };
-    if (path.startsWith('/settings')) return { title: 'Workspace Settings', code: '07' };
-    return { title: 'ONᵉ Studio', code: '00' };
+    if (path === '/') return { title: 'User Dashboard', code: '01' };
+    if (path.startsWith('/chat')) return { title: 'Dual-Brain AI Chat', code: '02' };
+    if (path.startsWith('/settings')) return { title: 'Workspace Settings', code: '03' };
+    return { title: 'User Dashboard', code: '01' };
   };
 
   const pageInfo = getPageInfo();
@@ -44,29 +40,29 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileMenuToggle }) => {
   const notifications = [
     {
       id: 1,
-      title: 'Render Completed',
-      desc: 'Neon Odyssey: Shinjuku 2099 is ready in 4K 60fps.',
-      time: '12m ago',
+      title: 'Dual-Brain Pipeline Active',
+      desc: 'TypeSafe Jev System-1 (<100ms) and Thinking Machines Inkling are online.',
+      time: 'Just now',
       unread: true,
     },
     {
       id: 2,
-      title: 'Prompt Optimization',
-      desc: 'Magic Enhancer upgraded your prompt with 35mm anamorphic tags.',
+      title: 'Reasoning Budget Optimized',
+      desc: 'Automatic intent routing calibrated for high-precision responses.',
       time: '1h ago',
       unread: false,
     },
     {
       id: 3,
-      title: 'Weekly Allowance',
-      desc: 'Added +1,000 ONᵉ Energy to your creative account.',
+      title: 'Session Restored',
+      desc: 'Previous conversations safely loaded from local cache.',
       time: '1d ago',
       unread: false,
     },
   ];
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 md:px-8 bg-[#040608]/90 backdrop-blur-xl border-b border-[#141822]">
+    <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 md:px-8 bg-[#171D25]/95 backdrop-blur-xl border-b border-[#2A475E]/70">
       {/* Left: Mobile Toggle & Page Titles */}
       <div className="flex items-center gap-4">
         <button
@@ -78,7 +74,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileMenuToggle }) => {
         </button>
 
         <div className="flex items-center gap-2.5 font-mono text-xs">
-          <span className="text-[#A5C4F2] font-semibold">{pageInfo.code}</span>
+          <span className="text-[#66C0F4] font-semibold">{pageInfo.code}</span>
           <span className="text-zinc-600">/</span>
           <h1 className="text-xs sm:text-sm font-medium tracking-widest uppercase text-white font-mono">
             {pageInfo.title}
@@ -91,27 +87,27 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileMenuToggle }) => {
         {/* Command Palette Trigger */}
         <button
           onClick={() => setCommandPaletteOpen(true)}
-          className="flex items-center gap-2.5 px-3 py-1.5 rounded-full capsule-control text-xs text-zinc-400 hover:text-zinc-200 transition-all cursor-pointer font-mono"
+          className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-[#1B2838] border border-[#2A475E] hover:border-[#66C0F4]/60 text-xs text-[#C7D5E0] hover:text-white transition-all cursor-pointer font-mono"
         >
-          <Search className="w-3.5 h-3.5 text-zinc-400" />
+          <Search className="w-3.5 h-3.5 text-[#66C0F4]" />
           <span className="hidden sm:inline text-[11px]">SEARCH</span>
-          <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[9px] font-mono text-zinc-400 bg-white/5 border border-white/10 rounded-full">
+          <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[9px] font-mono text-zinc-400 bg-black/30 border border-[#2A475E] rounded-full">
             ⌘K
           </kbd>
         </button>
 
         {/* AI Orb Status Pill */}
-        <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full capsule-control text-[11px] font-mono">
+        <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-[#1B2838] border border-[#2A475E] text-[11px] font-mono">
           <span 
             className={`w-1.5 h-1.5 rounded-full ${
               orbState === 'generating'
-                ? 'bg-brand-orange animate-ping'
+                ? 'bg-[#66C0F4] animate-ping'
                 : orbState === 'thinking'
                 ? 'bg-[#E5A866] animate-pulse'
-                : 'bg-[#A5C4F2]'
+                : 'bg-[#5C7E10] shadow-[0_0_8px_#5C7E10]'
             }`}
           />
-          <span className="text-zinc-300 capitalize">{orbState}</span>
+          <span className="text-[#C7D5E0] capitalize">{orbState}</span>
         </div>
 
         {/* Ambient Web Audio Synthesizer Quick Toggle */}

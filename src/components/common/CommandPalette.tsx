@@ -3,17 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, 
-  Home, 
   MessageSquare, 
-  Video, 
-  Sparkles, 
-  Compass, 
-  FolderKanban, 
   Settings, 
-  Wand2, 
   PlusCircle, 
   RotateCcw,
-  Zap,
   ArrowRight
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
@@ -32,8 +25,6 @@ export const CommandPalette: React.FC = () => {
   const isOpen = useAppStore((state) => state.isCommandPaletteOpen);
   const setIsOpen = useAppStore((state) => state.setCommandPaletteOpen);
   const createConversation = useAppStore((state) => state.createConversation);
-  const enhanceStudioPrompt = useAppStore((state) => state.enhanceStudioPrompt);
-  const startVideoGeneration = useAppStore((state) => state.startVideoGeneration);
   const resetAllToFactoryDefaults = useAppStore((state) => state.resetAllToFactoryDefaults);
   const addToast = useAppStore((state) => state.addToast);
 
@@ -66,100 +57,36 @@ export const CommandPalette: React.FC = () => {
 
   const commands: CommandItem[] = [
     {
-      id: 'nav-home',
-      title: 'Home Dashboard',
-      subtitle: 'Overview, AI Orb, universal prompt, quick stats',
-      category: 'Navigation',
-      icon: <Home className="w-4 h-4 text-brand-yellow" />,
-      action: () => navigate('/'),
-    },
-    {
       id: 'nav-chat',
       title: 'AI Chat Studio',
-      subtitle: 'Conversational assistant with script & prompt ideation',
+      subtitle: 'Dual-brain conversational assistant with Jev System-1 & Inkling',
       category: 'Navigation',
-      icon: <MessageSquare className="w-4 h-4 text-sky-400" />,
-      action: () => navigate('/chat'),
-    },
-    {
-      id: 'nav-video',
-      title: 'Text-to-Video Studio',
-      subtitle: 'Split-screen director mode, storyboard & timeline',
-      category: 'Navigation',
-      icon: <Video className="w-4 h-4 text-brand-orange" />,
-      action: () => navigate('/studio'),
-      badge: 'Hot',
-    },
-    {
-      id: 'nav-playground',
-      title: 'Creative Playground',
-      subtitle: 'A/B prompt experimentation and parameter testing',
-      category: 'Navigation',
-      icon: <Sparkles className="w-4 h-4 text-amber-400" />,
-      action: () => navigate('/playground'),
-    },
-    {
-      id: 'nav-explore',
-      title: 'Explore Community Showcase',
-      subtitle: 'Trending AI videos, animations and reusable prompts',
-      category: 'Navigation',
-      icon: <Compass className="w-4 h-4 text-emerald-400" />,
-      action: () => navigate('/explore'),
-    },
-    {
-      id: 'nav-creations',
-      title: 'My Creations',
-      subtitle: 'Saved video projects, favorites and render history',
-      category: 'Navigation',
-      icon: <FolderKanban className="w-4 h-4 text-purple-400" />,
-      action: () => navigate('/creations'),
-    },
-    {
-      id: 'nav-settings',
-      title: 'Settings & Workspace',
-      subtitle: 'Appearance, default render settings, profile',
-      category: 'Navigation',
-      icon: <Settings className="w-4 h-4 text-zinc-400" />,
-      action: () => navigate('/settings'),
+      icon: <MessageSquare className="w-4 h-4 text-[#A5C4F2]" />,
+      action: () => navigate('/'),
     },
     {
       id: 'action-new-chat',
       title: 'New AI Chat Session',
       subtitle: 'Initialize a fresh conversation thread',
       category: 'Actions',
-      icon: <PlusCircle className="w-4 h-4 text-brand-yellow" />,
+      icon: <PlusCircle className="w-4 h-4 text-emerald-400" />,
       action: () => {
         createConversation();
-        navigate('/chat');
+        navigate('/');
       },
     },
     {
-      id: 'action-enhance',
-      title: 'Magic Prompt Enhancer',
-      subtitle: 'Enhance studio prompt with cinematic lighting descriptors',
-      category: 'Actions',
-      icon: <Wand2 className="w-4 h-4 text-brand-orange" />,
-      action: () => {
-        navigate('/studio');
-        enhanceStudioPrompt();
-      },
-    },
-    {
-      id: 'action-generate',
-      title: 'Quick Video Render',
-      subtitle: 'Launch multi-stage simulation with active settings',
-      category: 'Actions',
-      icon: <Zap className="w-4 h-4 text-brand-yellow" />,
-      action: () => {
-        navigate('/studio');
-        startVideoGeneration();
-      },
-      badge: 'Fast',
+      id: 'nav-settings',
+      title: 'Settings & Workspace',
+      subtitle: 'Appearance, model preferences, and user profile',
+      category: 'Navigation',
+      icon: <Settings className="w-4 h-4 text-zinc-400" />,
+      action: () => navigate('/settings'),
     },
     {
       id: 'action-reset',
       title: 'Reset Demo Data',
-      subtitle: 'Restore initial demo projects and conversations',
+      subtitle: 'Restore initial conversation threads and cache',
       category: 'Actions',
       icon: <RotateCcw className="w-4 h-4 text-rose-400" />,
       action: () => {

@@ -9,6 +9,16 @@ interface AsciiVisualizerProps {
   showSelector?: boolean;
 }
 
+interface Spark {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+  color: string;
+}
+
 export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
   initialMode = 'wireframe',
   className = '',
@@ -26,6 +36,8 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
 
   // Track mouse coordinates for subtle interactive perspective shift
   const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
+  const warpBoostRef = useRef(0);
+  const sparksRef = useRef<Spark[]>([]);
 
   useEffect(() => {
     const handleReboot = () => {
@@ -39,6 +51,30 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
     window.addEventListener('matrix-reboot', handleReboot);
     return () => window.removeEventListener('matrix-reboot', handleReboot);
   }, []);
+
+  const handleCanvasClick = (e: React.MouseEvent<HTMLElement>) => {
+    warpBoostRef.current = 1.0;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+
+    // Emit 25 golden sparks
+    for (let i = 0; i < 25; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 4 + 1.5;
+      sparksRef.current.push({
+        x: clickX,
+        y: clickY,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 0,
+        maxLife: Math.random() * 30 + 20,
+        color: Math.random() > 0.4 ? '#E5A866' : '#A5C4F2',
+      });
+    }
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -70,12 +106,23 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
       { id: 6, relX: 95, w: 60, h: 190, z: 0.85 },
     ];
 
+    // Floating 3D Cyber Particles
+    const cyberMotes = Array.from({ length: 22 }, (_, idx) => ({
+      id: idx,
+      relX: (Math.random() - 0.5) * 320,
+      relY: (Math.random() - 0.5) * 160,
+      z: Math.random(),
+      speed: Math.random() * 0.08 + 0.05,
+      size: Math.random() * 2 + 1,
+      color: Math.random() > 0.5 ? '#A5C4F2' : '#E5A866',
+    }));
+
     const handleMouseMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
       const normX = (e.clientX - rect.left) / rect.width - 0.5;
       const normY = (e.clientY - rect.top) / rect.height - 0.5;
-      mouseRef.current.targetX = normX * 15;
-      mouseRef.current.targetY = normY * 10;
+      mouseRef.current.targetX = normX * 18;
+      mouseRef.current.targetY = normY * 12;
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -85,7 +132,14 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
       mouseRef.current.x += (mouseRef.current.targetX - mouseRef.current.x) * 0.05;
       mouseRef.current.y += (mouseRef.current.targetY - mouseRef.current.y) * 0.05;
 
-      const speedFactor = orbState === 'thinking' ? 1.8 : orbState === 'generating' ? 2.8 : 1.0;
+      // Warp boost decay
+      if (warpBoostRef.current > 0.01) {
+        warpBoostRef.current *= 0.94;
+      } else {
+        warpBoostRef.current = 0;
+      }
+
+      const speedFactor = (orbState === 'thinking' ? 1.8 : orbState === 'generating' ? 2.8 : 1.0) + warpBoostRef.current * 2.5;
       if (!pausedRef.current) {
         time += 0.02 * speedFactor;
       }
@@ -99,28 +153,58 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
 
       if (mode === 'wireframe') {
         // =========================================================
-        // --- MODE 3: ACTIVELY MOVING 3D WIREFRAME CITY (Image 3) ---
+        // --- MODE 3: HIGH-OCTANE 3D WIREFRAME CYBER CITY ---
         // =========================================================
         const vanishX = width * 0.5 + mouseRef.current.x;
         const vanishY = height * 0.43 + mouseRef.current.y;
 
         // 1. Horizon Line & Glowing Vanishing Point Beacon
-        ctx.strokeStyle = 'rgba(142, 174, 234, 0.2)';
+        ctx.strokeStyle = 'rgba(142, 174, 234, 0.25)';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(0, vanishY);
         ctx.lineTo(width, vanishY);
         ctx.stroke();
 
+        // Multi-tier Horizon Shockwaves
+        const shockPeriod = 3.0;
+        const sw1 = ((time % shockPeriod) / shockPeriod);
+        const swDepth1 = Math.pow(sw1, 2.4);
+        const swY1 = vanishY + (height - vanishY) * swDepth1;
+        const swSpread1 = width * (0.2 + swDepth1 * 0.95);
+
+        ctx.beginPath();
+        ctx.ellipse(vanishX, swY1, swSpread1 * 0.5, 4 + swDepth1 * 16, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(229, 168, 102, ${(1 - sw1) * 0.45})`;
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
         // Amber Beacon Glow at Vanishing Point
-        const glowPulse = 0.5 + Math.sin(time * 3) * 0.2;
-        const gradient = ctx.createRadialGradient(vanishX, vanishY, 0, vanishX, vanishY, 35);
-        gradient.addColorStop(0, `rgba(229, 168, 102, ${glowPulse * 0.8})`);
+        const glowPulse = 0.55 + Math.sin(time * 3.5) * 0.25;
+        const gradient = ctx.createRadialGradient(vanishX, vanishY, 0, vanishX, vanishY, 42);
+        gradient.addColorStop(0, `rgba(229, 168, 102, ${glowPulse * 0.95})`);
+        gradient.addColorStop(0.4, `rgba(229, 168, 102, ${glowPulse * 0.4})`);
         gradient.addColorStop(1, 'rgba(229, 168, 102, 0)');
         ctx.fillStyle = gradient;
         ctx.beginPath();
-        ctx.arc(vanishX, vanishY, 35, 0, Math.PI * 2);
+        ctx.arc(vanishX, vanishY, 42, 0, Math.PI * 2);
         ctx.fill();
+
+        // Rotating 8-Point Starburst Diffraction Flare at Vanishing Point
+        const flareAngle = time * 0.8;
+        ctx.save();
+        ctx.translate(vanishX, vanishY);
+        ctx.rotate(flareAngle);
+        for (let s = 0; s < 4; s++) {
+          ctx.rotate(Math.PI / 4);
+          ctx.strokeStyle = `rgba(255, 230, 180, ${0.18 + Math.sin(time * 4) * 0.08})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(-35, 0);
+          ctx.lineTo(35, 0);
+          ctx.stroke();
+        }
+        ctx.restore();
 
         // 2. Vanishing Perspective Radial Street Vectors
         const numRays = 18;
@@ -145,17 +229,49 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
           ctx.stroke();
         }
 
-        // 3. FLUID MOVING HORIZONTAL TRANSVERSE DEPTH GRIDS (Streaming towards camera!)
+        // 3. SPEED VECTOR LASER LIGHT TRAILS (Tron / Cyberpunk Pulses streaming towards camera!)
+        const numSpeedBeams = 7;
+        for (let b = 0; b < numSpeedBeams; b++) {
+          const beamOffset = ((time * 1.5 + b * 0.16) % 1.0);
+          const depth = Math.pow(beamOffset, 2.9);
+          const rayIdx = ((b * 4) % 13) - 6; // rays from -6 to +6
+          const bottomX = vanishX + rayIdx * 28 + mouseRef.current.x * 0.5;
+          const curX = vanishX + (bottomX - vanishX) * depth;
+          const curY = vanishY + (height - vanishY) * depth;
+
+          const prevDepth = Math.max(0, depth - 0.09);
+          const prevX = vanishX + (bottomX - vanishX) * prevDepth;
+          const prevY = vanishY + (height - vanishY) * prevDepth;
+
+          const beamGrad = ctx.createLinearGradient(prevX, prevY, curX, curY);
+          beamGrad.addColorStop(0, 'rgba(229, 168, 102, 0)');
+          beamGrad.addColorStop(0.7, b % 2 === 0 ? 'rgba(229, 168, 102, 0.95)' : 'rgba(165, 196, 242, 0.95)');
+          beamGrad.addColorStop(1, '#FFFFFF');
+
+          ctx.strokeStyle = beamGrad;
+          ctx.lineWidth = 1.5 + depth * 2.5;
+          ctx.beginPath();
+          ctx.moveTo(prevX, prevY);
+          ctx.lineTo(curX, curY);
+          ctx.stroke();
+
+          // Flare head
+          if (depth > 0.45) {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(curX, curY, 2 + depth * 2.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        // 4. FLUID MOVING HORIZONTAL TRANSVERSE DEPTH GRIDS
         const numGrids = 16;
         for (let g = 0; g < numGrids; g++) {
-          // Modular continuous offset moving forward!
-          const rawOffset = ((g / numGrids) + (time * 0.35)) % 1.0;
-          // Exponential perspective depth warp
+          const rawOffset = ((g / numGrids) + (time * 0.38)) % 1.0;
           const depth = Math.pow(rawOffset, 2.8);
           const y = vanishY + (height - vanishY) * depth;
 
-          // Road width spreads as it approaches the screen
-          const spread = width * (0.15 + depth * 0.9);
+          const spread = width * (0.15 + depth * 0.92);
           const leftX = vanishX - spread * 0.5;
           const rightX = vanishX + spread * 0.5;
 
@@ -163,43 +279,39 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
           ctx.moveTo(Math.max(0, leftX), y);
           ctx.lineTo(Math.min(width, rightX), y);
 
-          // Alpha fades in near horizon, reaches maximum intensity near bottom
-          const alpha = Math.min(0.7, 0.05 + depth * 0.75);
+          const alpha = Math.min(0.75, 0.05 + depth * 0.75);
           ctx.strokeStyle = `rgba(165, 196, 242, ${alpha})`;
           ctx.lineWidth = depth > 0.6 ? 1.5 : 1;
           ctx.stroke();
         }
 
-        // 4. Center Dashed Road Markings Streaming Forward
-        const numDashes = 10;
+        // 5. Center Dashed Road Markings Streaming Forward
+        const numDashes = 11;
         for (let d = 0; d < numDashes; d++) {
-          const dashOffset = ((d / numDashes) + (time * 0.7)) % 1.0;
+          const dashOffset = ((d / numDashes) + (time * 0.75)) % 1.0;
           const depth = Math.pow(dashOffset, 2.6);
           const dashY = vanishY + (height - vanishY) * depth;
-          const dashLen = 4 + depth * 22;
+          const dashLen = 4 + depth * 24;
 
           ctx.beginPath();
           ctx.moveTo(vanishX, dashY);
           ctx.lineTo(vanishX, dashY + dashLen);
           ctx.strokeStyle = `rgba(255, 240, 200, ${0.2 + depth * 0.8})`;
-          ctx.lineWidth = 2 + depth * 2;
+          ctx.lineWidth = 2 + depth * 2.2;
           ctx.stroke();
         }
 
-        // 5. MOVING WIREFRAME MONOLITHS & BUILDINGS (With continuous 3D forward translation!)
+        // 6. MOVING WIREFRAME MONOLITHS WITH SCANNING LASERS & MATRIX WINDOWS
         baseBuildings.forEach((b) => {
-          // Calculate moving depth z from 0 (horizon) to 1 (passes screen)
           const currentZ = (b.z + (time * 0.12)) % 1.0;
           const depthScale = Math.pow(currentZ, 2.2);
 
-          // Calculate 3D perspective position
           const bx = vanishX + b.relX * (0.2 + depthScale * 0.9) - (b.w * (0.3 + depthScale * 0.7)) * 0.5;
           const baseFloorY = vanishY + (height - vanishY) * depthScale;
           const currentH = b.h * (0.25 + depthScale * 0.8);
           const currentW = b.w * (0.25 + depthScale * 0.75);
           const by = baseFloorY - currentH;
 
-          // Only draw if within visible canvas bounds
           if (baseFloorY > vanishY && by < height + 50) {
             const alpha = Math.min(0.85, 0.15 + depthScale * 0.75);
 
@@ -218,7 +330,7 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
             ctx.lineWidth = 0.8;
             ctx.stroke();
 
-            // Internal Horizontal Floor Lines
+            // Internal Horizontal Floor Lines & Flickering Matrix Windows
             const floors = 5;
             for (let f = 1; f < floors; f++) {
               const fy = by + (currentH / floors) * f;
@@ -228,17 +340,72 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
               ctx.strokeStyle = `rgba(142, 174, 234, ${alpha * 0.3})`;
               ctx.lineWidth = 0.8;
               ctx.stroke();
+
+              // Window Accents that twinkle
+              if (depthScale > 0.28) {
+                for (let wCol = 1; wCol <= 3; wCol++) {
+                  const wx = bx + (currentW / 4) * wCol;
+                  const isLit = Math.sin(time * 3 + b.id * 10 + f * 5 + wCol) > 0.15;
+                  if (isLit) {
+                    ctx.fillStyle = b.id % 2 === 0 ? `rgba(229, 168, 102, ${alpha * 0.9})` : `rgba(165, 196, 242, ${alpha * 0.9})`;
+                    ctx.fillRect(wx - 2, fy - 3, 3, 4);
+                  }
+                }
+              }
             }
 
-            // Window Accent Glow Dot
-            if (depthScale > 0.3) {
-              ctx.fillStyle = `rgba(229, 168, 102, ${alpha * 0.85})`;
-              ctx.fillRect(bx + currentW * 0.4, by + currentH * 0.3, 3, 5);
+            // Vertical Scanning Laser Beam on Front Building
+            if (depthScale > 0.35) {
+              const scanY = by + ((time * 40 + b.id * 25) % currentH);
+              ctx.strokeStyle = 'rgba(165, 196, 242, 0.75)';
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(bx, scanY);
+              ctx.lineTo(bx + currentW, scanY);
+              ctx.stroke();
             }
           }
         });
 
-        // 6. Streaming Upper Matrix ASCII Telemetry Rays (Image 3 exact match)
+        // 7. FLOATING 3D PERSPECTIVE DUST MOTES
+        cyberMotes.forEach((m) => {
+          m.z = (m.z + m.speed * speedFactor * 0.05) % 1.0;
+          const zDepth = Math.pow(m.z, 2.2);
+          const px = vanishX + m.relX * (0.15 + zDepth * 1.1);
+          const py = vanishY + m.relY * (0.2 + zDepth * 1.0);
+          const pSize = m.size * (0.4 + zDepth * 1.4);
+          const pAlpha = Math.min(0.8, 0.1 + zDepth * 0.7);
+
+          ctx.beginPath();
+          ctx.arc(px, py, pSize, 0, Math.PI * 2);
+          ctx.fillStyle = m.color;
+          ctx.globalAlpha = pAlpha;
+          ctx.fill();
+          ctx.globalAlpha = 1.0;
+        });
+
+        // 8. INTERACTIVE CLICK SPARKS
+        for (let s = sparksRef.current.length - 1; s >= 0; s--) {
+          const sp = sparksRef.current[s];
+          sp.x += sp.vx;
+          sp.y += sp.vy;
+          sp.vy += 0.1; // gravity
+          sp.life++;
+
+          const spAlpha = Math.max(0, 1 - sp.life / sp.maxLife);
+          ctx.beginPath();
+          ctx.arc(sp.x, sp.y, 2, 0, Math.PI * 2);
+          ctx.fillStyle = sp.color;
+          ctx.globalAlpha = spAlpha;
+          ctx.fill();
+          ctx.globalAlpha = 1.0;
+
+          if (sp.life >= sp.maxLife) {
+            sparksRef.current.splice(s, 1);
+          }
+        }
+
+        // 9. Streaming Upper Matrix ASCII Telemetry Rays
         ctx.fillStyle = '#8EAEEA';
         ctx.font = '10px "JetBrains Mono", monospace';
         for (let r = 0; r < 6; r++) {
@@ -248,10 +415,16 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
           ctx.fillText(dashChars, 405 + mouseRef.current.x * 0.3, 90 + r * 22);
         }
 
-        // Live Telemetry Watermark
-        ctx.fillStyle = 'rgba(165, 196, 242, 0.45)';
+        // Live Telemetry Watermark with Warp Notice
+        ctx.fillStyle = warpBoostRef.current > 0.1 ? '#E5A866' : 'rgba(165, 196, 242, 0.45)';
         ctx.font = '9px "JetBrains Mono", monospace';
-        ctx.fillText(`60FPS // PERSPECTIVE VECTOR ACTIVE [${time.toFixed(1)}s]`, width * 0.5, height - 14);
+        ctx.fillText(
+          warpBoostRef.current > 0.1
+            ? `⚡ WARP ACCELERATION ENGAGED [${(warpBoostRef.current * 100).toFixed(0)}%]`
+            : `60FPS // PERSPECTIVE VECTOR ACTIVE [${time.toFixed(1)}s]`,
+          width * 0.5,
+          height - 14
+        );
 
       } else if (mode === 'sphere') {
         // --- MODE 1: ASCII MATRIX SPHERE (Image 2) ---
@@ -323,30 +496,46 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
             }
           }
         }
-      } else {
-        // --- MODE 2: ASCII LIGHTHOUSE & BEAM (Image 1) ---
-        const towerX = width * 0.72;
-        const towerTopY = 80;
-        const lanternW = 55;
-        const towerW = 44;
+      } else if (mode === 'lighthouse') {
+        // --- MODE 2: BEACON ---
+        const towerX = width * 0.5;
+        const towerTopY = 90;
+        const beamAngle = time * 1.5;
 
+        ctx.save();
+        ctx.translate(towerX, towerTopY + 20);
+
+        const beamLength = 260;
+        const beamWidth = 45;
+
+        for (let side = -1; side <= 1; side += 2) {
+          const curAngle = beamAngle + (side === 1 ? Math.PI : 0);
+          const endX = Math.cos(curAngle) * beamLength;
+          const endY = Math.sin(curAngle) * beamLength * 0.4;
+
+          const grad = ctx.createRadialGradient(0, 0, 0, endX, endY, beamLength);
+          grad.addColorStop(0, 'rgba(255, 230, 160, 0.7)');
+          grad.addColorStop(0.3, 'rgba(255, 200, 100, 0.25)');
+          grad.addColorStop(1, 'rgba(255, 200, 100, 0)');
+
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(endX - Math.sin(curAngle) * beamWidth, endY + Math.cos(curAngle) * beamWidth);
+          ctx.lineTo(endX + Math.sin(curAngle) * beamWidth, endY - Math.cos(curAngle) * beamWidth);
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.restore();
+
+        // Tower geometry
         ctx.fillStyle = '#E5A866';
-        for (let row = 0; row < 6; row++) {
-          ctx.fillText('########', towerX, towerTopY + row * 11);
-        }
+        ctx.fillText('/\\', towerX, towerTopY);
+        ctx.fillText('/==\\', towerX, towerTopY + 11);
+        ctx.fillText('|**|', towerX, towerTopY + 22);
 
-        const beamAngle = Math.sin(time * 0.5) * 0.08;
-        for (let bx = 0; bx < 28; bx++) {
-          const xPos = towerX - lanternW * 0.5 - bx * 11;
-          const yPos = towerTopY + 22 + (bx * beamAngle * 10);
-          const beamChar = bx % 2 === 0 ? '****************' : '++++++++++++++++';
-          ctx.fillStyle = bx < 10 ? '#FFF2D9' : bx < 20 ? '#E5A866' : 'rgba(229, 168, 102, 0.35)';
-          ctx.fillText(beamChar, xPos, yPos - 6);
-          ctx.fillText(beamChar, xPos, yPos + 6);
-        }
-
-        const bodyTopY = towerTopY + 70;
-        const numBands = 8;
+        const numBands = 7;
+        const bodyTopY = towerTopY + 36;
         const bandH = 28;
 
         for (let b = 0; b < numBands; b++) {
@@ -362,10 +551,6 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
         ctx.fillStyle = '#4B5568';
         ctx.fillText('////////////////////', towerX, bodyTopY + numBands * bandH + 5);
         ctx.fillText('====================', towerX, bodyTopY + numBands * bandH + 16);
-
-        ctx.fillStyle = '#8A94A6';
-        ctx.font = '9px "JetBrains Mono", monospace';
-        ctx.fillText('A CREATIVE VERTICAL / ONE SPACE. INFINITE POSSIBILITIES.', towerX - 70, height - 25);
       }
 
       animationFrameId = requestAnimationFrame(render);
@@ -381,10 +566,19 @@ export const AsciiVisualizer: React.FC<AsciiVisualizerProps> = ({
 
   return (
     <div className={`relative flex flex-col items-center justify-center ${className}`}>
-      {/* Canvas container with ambient background glow */}
-      <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#040608] shadow-2xl">
+      {/* Canvas container with ambient background glow & interactive click */}
+      <div 
+        onClick={handleCanvasClick}
+        className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#040608] shadow-2xl cursor-pointer group transition-all duration-300 hover:border-[#E5A866]/40 hover:shadow-[0_0_35px_rgba(229,168,102,0.18)]"
+        title="Click canvas to trigger interactive warp acceleration!"
+      >
         <canvas ref={canvasRef} className="block transition-opacity duration-300" />
         <div className="absolute inset-0 bg-radial-gradient pointer-events-none opacity-40" />
+
+        {/* Subtle interactive hover cue */}
+        <div className="absolute top-3 right-3 text-[9px] font-mono text-zinc-500 group-hover:text-[#E5A866] transition-colors pointer-events-none bg-black/60 px-2 py-0.5 rounded-full border border-white/5">
+          [CLICK TO WARP]
+        </div>
       </div>
 
       {/* Mode Switcher Pills */}
