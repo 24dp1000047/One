@@ -5,15 +5,29 @@ dotenv.config();
 
 const OPENROUTER_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
 
-// Thinking Machines Lab Inkling Model family on OpenRouter
-const INKLING_MODELS = [
-  'thinkingmachines/inkling-2-mini',
-  'thinkingmachines/inkling-2-small',
-  'thinkingmachines/inkling',
-];
+// Thinking Machines Lab Inkling model family on OpenRouter (all verified live).
+// Override the order with INKLING_MODELS="a,b,c" in backend/.env.
+const INKLING_MODELS = (process.env.INKLING_MODELS ||
+  'thinkingmachines/inkling-2-mini,thinkingmachines/inkling-2-small,thinkingmachines/inkling')
+  .split(',')
+  .map((m) => m.trim())
+  .filter(Boolean);
 
-// High-performance free reasoning fallback if user's OpenRouter key has $0 balance limit
-const FREE_REASONING_FALLBACK = 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free';
+// Free reasoning fallback used when the OpenRouter key has a $0 balance limit.
+const FREE_REASONING_FALLBACK =
+  process.env.INKLING_FALLBACK_MODEL || 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free';
+
+/**
+ * Builds the request body, passing Jev's System-1 reasoning budget through to the
+ * provider as a real reasoning-effort hint instead of leaving it decorative.
+ */
+function buildBody(modelId: string, messages: any[], jevDecision: JevDecision) {
+  return {
+    model: modelId,
+    messages,
+    reasoning: { effort: jevDecision.reasoningBudget },
+  };
+}
 
 function parseContentAndFollowUps(rawContent: string, intent: string): { content: string; followUps: string[] } {
   const parts = rawContent.split('---FOLLOW_UPS---');
@@ -144,10 +158,7 @@ At the very end of your answer, provide exactly 3 relevant follow-up questions t
           'HTTP-Referer': 'https://github.com/24dp1000047/One',
           'X-Title': 'ONe AI Studio - Jev & Inkling Pipeline',
         },
-        body: JSON.stringify({
-          model: modelId,
-          messages,
-        }),
+        body: JSON.stringify(buildBody(modelId, messages, jevDecision)),
       });
 
       if (response.ok) {
@@ -183,10 +194,7 @@ At the very end of your answer, provide exactly 3 relevant follow-up questions t
         'HTTP-Referer': 'https://github.com/24dp1000047/One',
         'X-Title': 'ONe AI Studio - Jev & Inkling Pipeline',
       },
-      body: JSON.stringify({
-        model: FREE_REASONING_FALLBACK,
-        messages,
-      }),
+      body: JSON.stringify(buildBody(FREE_REASONING_FALLBACK, messages, jevDecision)),
     });
 
     if (fallbackResponse.ok) {

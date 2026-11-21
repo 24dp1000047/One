@@ -42,6 +42,10 @@ export interface JevDecision {
   noulResult?: TypeSafeNoulResult;
   choiceResult?: TypeSafeChoiceResult;
   stateExplanation?: string;
+  /** True when Jev was unreachable and the fields above are defaults, not real output. */
+  degraded?: boolean;
+  /** Why Jev did not produce a real decision, when degraded is true. */
+  error?: string;
 }
 
 export interface InklingResponse {

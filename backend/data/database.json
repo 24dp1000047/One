@@ -1,0 +1,140 @@
+{
+  "conversations": [
+    {
+      "id": "conv-2026-11-21",
+      "title": "hi",
+      "createdAt": "2026-11-21T15:02:27.732Z",
+      "updatedAt": "2026-11-21T15:03:21.839Z"
+    },
+    {
+      "id": "conv-sample-1",
+      "title": "TypeSafe Decision: Ice Cream Sandwich",
+      "createdAt": "2026-11-21T12:40:06.036Z",
+      "updatedAt": "2026-11-21T12:40:06.038Z"
+    }
+  ],
+  "messages": [
+    {
+      "id": "msg-u-sample",
+      "conversationId": "conv-sample-1",
+      "role": "user",
+      "content": "Is an ice cream sandwich a sandwich?",
+      "model": "user",
+      "createdAt": "2026-11-21T12:40:06.038Z"
+    },
+    {
+      "id": "msg-ai-sample",
+      "conversationId": "conv-sample-1",
+      "role": "assistant",
+      "content": "An ice cream sandwich is taxonomically classified as a confection rather than a sandwich.",
+      "model": "Thinking Machines Inkling",
+      "createdAt": "2026-11-21T12:40:06.038Z"
+    },
+    {
+      "id": "msg-u-1795273347733",
+      "conversationId": "conv-2026-11-21",
+      "role": "user",
+      "content": "hi",
+      "model": "user",
+      "createdAt": "2026-11-21T15:02:27.733Z"
+    },
+    {
+      "id": "msg-ai-1795273347734",
+      "conversationId": "conv-2026-11-21",
+      "role": "assistant",
+      "content": "Hi! Glad to be here.\n\nIf you want help, I can either:\n- help debug that backend JSON error (it usually means the API server isn’t running or is returning an HTML page instead of JSON), or\n- break down a cinematic scene into shots with camera motion, duration, and lighting.\n\nTakeaway: the fastest useful step is to confirm the server is running and reachable at `http://localhost:5000` before focusing on the scene.",
+      "model": "thinkingmachines/inkling-2-mini",
+      "createdAt": "2026-11-21T15:02:27.733Z"
+    },
+    {
+      "id": "msg-u-1795273377110",
+      "conversationId": "conv-2026-11-21",
+      "role": "user",
+      "content": "Is Ice Cream cold?",
+      "model": "user",
+      "createdAt": "2026-11-21T15:02:57.110Z"
+    },
+    {
+      "id": "msg-ai-1795273377111",
+      "conversationId": "conv-2026-11-21",
+      "role": "assistant",
+      "content": "Verdict: **TRUE** — ice cream is cold under the standard definition.\n\n- **Culinary argument:** Ice cream is normally a frozen or chilled dairy-based mixture—milk/cream with sugar and flavorings—designed to be served below room temperature.\n- **Linguistic argument:** “Ice” directly implies frozen water; “cream” does not override that state. Even soft-serve, frozen mousses, and gelato are built around cold/chilled texture.\n- **Structural/standard-definition argument:** A high truth score reflects that most competent uses of “ice cream” entail a frozen/chilled state. The residual ~4% accounts for edge cases: defrosted ice cream, melted treats, or novelty uses where “ice cream” is being discussed as a food category rather than an observed physical sample.\n- **Takeaway:** “Ice cream is cold” is not logically absolute in every instantaneous physical state, but it is overwhelmingly true by definition and normal consumption: approximately 96% TRUE.",
+      "model": "thinkingmachines/inkling-2-mini",
+      "createdAt": "2026-11-21T15:02:57.110Z"
+    },
+    {
+      "id": "msg-u-1795273401839",
+      "conversationId": "conv-2026-11-21",
+      "role": "user",
+      "content": "Do aliens exist?",
+      "model": "user",
+      "createdAt": "2026-11-21T15:03:21.839Z"
+    },
+    {
+      "id": "msg-ai-1795273401840",
+      "conversationId": "conv-2026-11-21",
+      "role": "assistant",
+      "content": "Short answer: **contested / unresolved** — not proven true, not proven false. The “24% TRUE” figure should be read as a subjective probability under standard definitions, not a scientific measurement.\n\n- **What “aliens” means:** If it means confirmed non-human intelligence, the evidence is near zero; if it means any non-Earth life, the case is stronger because planets/moons broadly look life-compatible.\n- **Why not TRUE:** No unambiguous detection of extraterrestrial life or intelligence. Claims have not held under peer review or replication.\n- **Why not FALSE:** “No confirmed detection” is not proof of nonexistence. Silence can come from distance, numbers, detection limits, information delays, or technological differences—not from absence.\n- **Verdict rationale:** A 24%-ish estimate reflects substantial plausible uncertainty: biosignatures elsewhere seem likely, but “aliens exist” in the strong sense of sentient/technological visitors is unsupported. A TRUE band (~0.85) would need reproducible evidence; a FALSE band (~0.15) would need solid reason to rule out extraterrestrial life.\n- **Takeaway:** “Aliens exist” is open. The honest position is **uncertain but not established**, with weaker confidence in “life beyond Earth” and near-zero confidence in confirmed extraterrestrial civilization.",
+      "model": "thinkingmachines/inkling-2-mini",
+      "createdAt": "2026-11-21T15:03:21.839Z"
+    }
+  ],
+  "jevTelemetry": [
+    {
+      "id": "tel-1795273401839",
+      "messageId": "msg-ai-1795273401840",
+      "conversationId": "conv-2026-11-21",
+      "intent": "decision_noul",
+      "complexity": "moderate",
+      "confidence": 0.59,
+      "reasoningBudget": "medium",
+      "latencyMs": 948,
+      "primitiveType": "noul",
+      "truthScorePercent": 24,
+      "verdict": "CONTESTED / AMBIGUOUS",
+      "createdAt": "2026-11-21T15:03:21.839Z"
+    },
+    {
+      "id": "tel-1795273377110",
+      "messageId": "msg-ai-1795273377111",
+      "conversationId": "conv-2026-11-21",
+      "intent": "decision_noul",
+      "complexity": "simple",
+      "confidence": 0.84,
+      "reasoningBudget": "low",
+      "latencyMs": 990,
+      "primitiveType": "noul",
+      "truthScorePercent": 96,
+      "verdict": "TRUE",
+      "createdAt": "2026-11-21T15:02:57.110Z"
+    },
+    {
+      "id": "tel-1795273347733",
+      "messageId": "msg-ai-1795273347734",
+      "conversationId": "conv-2026-11-21",
+      "intent": "general_dialogue",
+      "complexity": "simple",
+      "confidence": 1,
+      "reasoningBudget": "low",
+      "latencyMs": 1352,
+      "primitiveType": "classifier",
+      "truthScorePercent": null,
+      "verdict": null,
+      "createdAt": "2026-11-21T15:02:27.733Z"
+    },
+    {
+      "id": "tel-sample-1",
+      "messageId": "msg-ai-sample",
+      "conversationId": "conv-sample-1",
+      "intent": "decision_noul",
+      "complexity": "simple",
+      "confidence": 0.94,
+      "reasoningBudget": "low",
+      "latencyMs": 48,
+      "primitiveType": "noul",
+      "truthScorePercent": 33,
+      "verdict": "CONTESTED / AMBIGUOUS",
+      "createdAt": "2026-11-21T12:40:06.038Z"
+    }
+  ]
+}
