@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { evaluateWithJev } from './jevEngine';
 import { generateWithInkling } from './inklingService';
 import { ChatApiResponse } from './types';
+import { checkDatabaseConnection, getRecentTelemetry, persistInteraction } from './db/dbService';
 
 dotenv.config();
 
@@ -15,7 +16,8 @@ app.use(cors());
 app.use(express.json());
 
 // 1. Health check & System Status
-app.get('/api/health', (req: Request, res: Response) => {
+app.get('/api/health', async (req: Request, res: Response) => {
+  const dbStatus = await checkDatabaseConnection();
   res.json({
     status: 'ONLINE',
     system1: {
@@ -30,6 +32,15 @@ app.get('/api/health', (req: Request, res: Response) => {
       role: 'System-2 Deep Reasoning & Agentic Generation Engine',
       contextWindow: '1M tokens',
     },
+    database: {
+      status: dbStatus.status,
+      engine: dbStatus.engine,
+      connected: dbStatus.connected,
+      configured: dbStatus.configured,
+      databasePath: dbStatus.databasePath,
+      totalRecords: dbStatus.totalRecords,
+      tables: dbStatus.tables,
+    },
     timestamp: new Date().toISOString(),
   });
 });
@@ -37,7 +48,7 @@ app.get('/api/health', (req: Request, res: Response) => {
 // 2. Chat API: Dual-Brain Pipeline (Jev System 1 -> Inkling System 2)
 app.post('/api/chat', async (req: Request, res: Response) => {
   try {
-    const { message, history } = req.body;
+    const { message, history, conversationId } = req.body;
 
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
       return res.status(400).json({
@@ -71,6 +82,16 @@ app.post('/api/chat', async (req: Request, res: Response) => {
       executionTimeMs: jevDecision.latencyMs + inklingResult.executionTimeMs,
       error: inklingResult.error,
     };
+
+    // Step 3: Asynchronously persist to Supabase PostgreSQL (Does not block chat response)
+    const convId = conversationId || 'conv-' + new Date().toISOString().slice(0, 10);
+    persistInteraction({
+      conversationId: convId,
+      userPrompt: trimmedPrompt,
+      aiResponse: inklingResult.content,
+      model: inklingResult.model,
+      jevDecision,
+    }).catch((err) => console.error('[Database Background Save Error]', err.message));
 
     return res.json(apiResponse);
   } catch (err: any) {
@@ -107,10 +128,27 @@ app.post('/api/enhance-prompt', async (req: Request, res: Response) => {
   }
 });
 
+// 4. Database Status API
+app.get('/api/db/status', async (req: Request, res: Response) => {
+  const dbStatus = await checkDatabaseConnection();
+  return res.json(dbStatus);
+});
+
+// 5. Database Telemetry Records API (View stored Jev System-1 decisions)
+app.get('/api/db/telemetry', async (req: Request, res: Response) => {
+  const limit = parseInt(req.query.limit as string) || 10;
+  const records = await getRecentTelemetry(limit);
+  return res.json({
+    count: records.length,
+    records,
+  });
+});
+
 app.listen(PORT, () => {
   console.log('====================================================');
   console.log(`🚀 ONe AI Studio Backend running on http://localhost:${PORT}`);
   console.log('🧠 System 1: Jev (TypeSafe AI Decision Engine)');
   console.log('🤖 System 2: Inkling (Thinking Machines Lab Reasoning)');
+  console.log('🗄️ Database: Supabase PostgreSQL (conversations, messages, jev_telemetry)');
   console.log('====================================================');
 });

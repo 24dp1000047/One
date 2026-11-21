@@ -1,0 +1,44 @@
+{
+  "conversations": [
+    {
+      "id": "conv-sample-1",
+      "title": "TypeSafe Decision: Ice Cream Sandwich",
+      "createdAt": "2026-11-21T12:40:06.036Z",
+      "updatedAt": "2026-11-21T12:40:06.038Z"
+    }
+  ],
+  "messages": [
+    {
+      "id": "msg-u-sample",
+      "conversationId": "conv-sample-1",
+      "role": "user",
+      "content": "Is an ice cream sandwich a sandwich?",
+      "model": "user",
+      "createdAt": "2026-11-21T12:40:06.038Z"
+    },
+    {
+      "id": "msg-ai-sample",
+      "conversationId": "conv-sample-1",
+      "role": "assistant",
+      "content": "An ice cream sandwich is taxonomically classified as a confection rather than a sandwich.",
+      "model": "Thinking Machines Inkling",
+      "createdAt": "2026-11-21T12:40:06.038Z"
+    }
+  ],
+  "jevTelemetry": [
+    {
+      "id": "tel-sample-1",
+      "messageId": "msg-ai-sample",
+      "conversationId": "conv-sample-1",
+      "intent": "decision_noul",
+      "complexity": "simple",
+      "confidence": 0.94,
+      "reasoningBudget": "low",
+      "latencyMs": 48,
+      "primitiveType": "noul",
+      "truthScorePercent": 33,
+      "verdict": "CONTESTED / AMBIGUOUS",
+      "createdAt": "2026-11-21T12:40:06.038Z"
+    }
+  ]
+}
