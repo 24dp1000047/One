@@ -33,9 +33,12 @@ app.get('/api/health', async (req: Request, res: Response) => {
       contextWindow: '1M tokens',
     },
     database: {
-      provider: 'Supabase PostgreSQL',
+      status: dbStatus.status,
+      engine: dbStatus.engine,
       connected: dbStatus.connected,
       configured: dbStatus.configured,
+      databasePath: dbStatus.databasePath,
+      totalRecords: dbStatus.totalRecords,
       tables: dbStatus.tables,
     },
     timestamp: new Date().toISOString(),
@@ -128,10 +131,7 @@ app.post('/api/enhance-prompt', async (req: Request, res: Response) => {
 // 4. Database Status API
 app.get('/api/db/status', async (req: Request, res: Response) => {
   const dbStatus = await checkDatabaseConnection();
-  return res.json({
-    engine: 'PostgreSQL (Supabase)',
-    ...dbStatus,
-  });
+  return res.json(dbStatus);
 });
 
 // 5. Database Telemetry Records API (View stored Jev System-1 decisions)
