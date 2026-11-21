@@ -1,12 +1,13 @@
 {
   "name": "one-ai-backend",
   "version": "1.0.0",
-  "description": "ONe AI Studio Backend with Jev (System 1) and Thinking Machines Inkling (System 2)",
+  "description": "ONe AI Studio Backend — Jev (TypeSafe System 1, real Decisions API) + Thinking Machines Inkling (System 2)",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "verify": "tsx scripts/verify-jev.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.109.0",

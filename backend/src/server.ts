@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { evaluateWithJev } from './jevEngine';
+import { evaluateWithJev, JEV_MODEL_ID } from './jevEngine';
 import { generateWithInkling } from './inklingService';
 import { ChatApiResponse } from './types';
 import { checkDatabaseConnection, getRecentTelemetry, persistInteraction } from './db/dbService';
@@ -23,8 +23,10 @@ app.get('/api/health', async (req: Request, res: Response) => {
     system1: {
       name: 'Jev',
       developer: 'TypeSafe AI',
-      role: 'System-1 Fast Decision Engine & Intent Classifier',
-      typicalLatency: '<100ms',
+      model: JEV_MODEL_ID,
+      endpoint: 'https://openrouter.ai/api/alpha/decisions',
+      role: 'System-1 Typed Decision Engine (choice / noul primitives)',
+      mode: process.env.OPENROUTER_API_KEY ? 'LIVE' : 'DEGRADED (no API key)',
     },
     system2: {
       name: 'Inkling',
@@ -48,7 +50,7 @@ app.get('/api/health', async (req: Request, res: Response) => {
 // 2. Chat API: Dual-Brain Pipeline (Jev System 1 -> Inkling System 2)
 app.post('/api/chat', async (req: Request, res: Response) => {
   try {
-    const { message, history, conversationId } = req.body;
+    const { message, history, conversationId, options } = req.body;
 
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
       return res.status(400).json({
@@ -61,10 +63,17 @@ app.post('/api/chat', async (req: Request, res: Response) => {
 
     // Step 1: Jev System-1 Fast Decision & Intent Classification (<100ms)
     console.log(`\n[Pipeline] 1. Running Jev System-1 Decision on: "${trimmedPrompt.slice(0, 40)}..."`);
-    const jevDecision = await evaluateWithJev(trimmedPrompt);
-    console.log(
-      `[Jev] Intent: ${jevDecision.intent} | Complexity: ${jevDecision.complexity} | Budget: ${jevDecision.reasoningBudget} (${jevDecision.latencyMs}ms)`
+    const jevDecision = await evaluateWithJev(
+      trimmedPrompt,
+      Array.isArray(options) ? options.map(String) : undefined
     );
+    if (jevDecision.degraded) {
+      console.warn(`[Jev] DEGRADED — ${jevDecision.error}`);
+    } else {
+      console.log(
+        `[Jev] Intent: ${jevDecision.intent} | Complexity: ${jevDecision.complexity} | Budget: ${jevDecision.reasoningBudget} | Primitive: ${jevDecision.primitiveType} (${jevDecision.latencyMs}ms)`
+      );
+    }
 
     // Step 2: Thinking Machines Inkling System-2 Deep Reasoning
     console.log(`[Pipeline] 2. Dispatching to Thinking Machines Inkling (System 2)...`);
@@ -144,10 +153,31 @@ app.get('/api/db/telemetry', async (req: Request, res: Response) => {
   });
 });
 
+// 6. Jev Debug API — inspect a raw System-1 decision without generating a reply
+app.post('/api/jev/evaluate', async (req: Request, res: Response) => {
+  try {
+    const { prompt, options } = req.body;
+    if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
+      return res.status(400).json({ success: false, error: 'prompt is required' });
+    }
+    const jevDecision = await evaluateWithJev(
+      prompt.trim(),
+      Array.isArray(options) ? options.map(String) : undefined
+    );
+    return res.status(jevDecision.degraded ? 503 : 200).json({
+      success: !jevDecision.degraded,
+      model: JEV_MODEL_ID,
+      jevDecision,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log('====================================================');
   console.log(`🚀 ONe AI Studio Backend running on http://localhost:${PORT}`);
-  console.log('🧠 System 1: Jev (TypeSafe AI Decision Engine)');
+  console.log(`🧠 System 1: Jev — ${JEV_MODEL_ID} (TypeSafe, via OpenRouter Decisions API)`);
   console.log('🤖 System 2: Inkling (Thinking Machines Lab Reasoning)');
   console.log('🗄️ Database: Supabase PostgreSQL (conversations, messages, jev_telemetry)');
   console.log('====================================================');

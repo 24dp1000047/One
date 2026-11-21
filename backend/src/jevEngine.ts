@@ -1,235 +1,384 @@
-import { JevDecision, TaskComplexity, TaskIntent, TypeSafeChoiceResult, TypeSafeNoulResult } from './types';
+import dotenv from 'dotenv';
+import {
+  JevDecision,
+  TaskComplexity,
+  TaskIntent,
+  TypeSafeChoiceResult,
+  TypeSafeNoulResult,
+} from './types';
+
+dotenv.config();
 
 /**
- * Jev System-1 Decision Engine (TypeSafe AI Architecture)
+ * Jev System-1 Decision Engine — REAL implementation.
  *
- * Implements TypeSafe AI Decision Primitives:
- * 1. Noul: Probabilistic truth evaluation (% truth score against criteria)
- * 2. Choice: Categorical probability distribution across discrete options
- * 3. Classifier: Fast non-autoregressive intent, complexity, and reasoning budget routing
+ * Replaces the previous regex/keyword matcher with actual calls to TypeSafe's
+ * Jev decision model through OpenRouter's Decisions API.
  *
- * Latency profile: Strictly sub-100ms (<100ms forward pass)
+ *   POST https://openrouter.ai/api/alpha/decisions
+ *   model: typesafe/jev-1.14
+ *
+ * Jev is a System One model: it does not generate prose. You send it a `state`
+ * plus typed `questions`, and it returns calibrated probabilities.
+ *
+ * Primitives used here:
+ *   - choice  -> multi-class classification (intent, complexity, option picking)
+ *   - noul    -> P(yes) for a binary question (truth evaluation)
+ *
+ * Pricing: $0.042 / 1M input tokens, output tokens free.
+ * Docs: https://openrouter.ai/docs/guides/features/decisions
  */
-export async function evaluateWithJev(prompt: string): Promise<JevDecision> {
-  const startTime = Date.now();
-  const trimmed = prompt.trim();
-  const lower = trimmed.toLowerCase();
 
-  // 1. Check for TypeSafe "Noul" Decision Questions (Truth evaluation)
-  const isIceCreamSandwich = /ice\s*cream\s*sandwich/i.test(lower);
-  const isHotdog = /\bhot\s*dog\b/i.test(lower) && /sandwich/i.test(lower);
-  const isSandwichGeneral = /\bsandwich\b/i.test(lower) && /\b(is|what|are)\b/i.test(lower);
-  const isTomato = /\btomato\b/i.test(lower) && /\b(fruit|vegetable)\b/i.test(lower);
-  const isVisionCheck = /\b(vision|image|picture|photo|look at)\b/i.test(lower) && /\b(need|require|model)\b/i.test(lower);
+const DECISIONS_ENDPOINT = 'https://openrouter.ai/api/alpha/decisions';
+const JEV_MODEL = process.env.JEV_MODEL || 'typesafe/jev-1.14';
+const JEV_TIMEOUT_MS = Number(process.env.JEV_TIMEOUT_MS || 8000);
 
-  const isGeneralYesNo =
-    /^is\b|^can\b|^does\b|^should\b|^would\b|^are\b/i.test(trimmed) ||
-    /\b(true or false|yes or no|is it considered|is .* a .*)\b/i.test(lower);
+/** Threshold above which a noul probability counts as "this is a truth question". */
+const TRUTH_QUESTION_THRESHOLD = 0.6;
 
-  if (isIceCreamSandwich) {
-    const noulResult: TypeSafeNoulResult = {
-      question: "Is 'Ice cream sandwich' a sandwich?",
-      subject: 'Ice cream sandwich',
-      category: 'Food Classification',
-      truthScorePercent: 33,
-      verdict: 'CONTESTED / AMBIGUOUS',
-      confidence: 0.94,
-      criteria: "A sandwich is defined as a dish where meat, cheese, or savory filling is held between two pieces of bread. An ice cream sandwich consists of dairy ice cream between wafer cookies, functioning taxonomically as a confection.",
-    };
+const INTENT_CRITERIA: Record<TaskIntent, string> = {
+  code_generation:
+    'Writing, fixing, explaining or debugging code, scripts, SQL, config files, regex or algorithms.',
+  technical_reasoning:
+    'System design, architecture, performance, concurrency, infrastructure, security or engineering trade-off analysis.',
+  creative_writing:
+    'Fiction, screenplays, scenes, poetry, characters, world-building or cinematic and stylistic prose.',
+  general_dialogue:
+    'Everyday conversation, factual lookups, definitions, explanations or advice that fits no other category.',
+  decision_noul:
+    'Asking the assistant to judge whether a proposition, classification or claim is true, such as "is a tomato a fruit?".',
+  decision_choice:
+    'Asking the assistant to pick which option among a set is correct or most likely, such as "what colour is the sky during a storm?".',
+};
 
-    return {
-      engine: 'Jev (TypeSafe AI System One)',
-      intent: 'decision_noul',
-      complexity: 'simple',
-      confidence: 0.94,
-      reasoningBudget: 'low',
-      latencyMs: Math.max(48, Date.now() - startTime + Math.floor(Math.random() * 25)),
-      primitiveType: 'noul',
-      noulResult,
-      stateExplanation: "TypeSafe Jev Noul evaluated criteria: 33% true (ice cream dessert wafer cookies vs culinary bread/filling definition).",
-    };
-  }
+const COMPLEXITY_CRITERIA: Record<TaskComplexity, string> = {
+  simple: 'One short step: a single fact, a definition, or a one-line answer.',
+  moderate: 'Several steps, some nuance, or a short structured explanation.',
+  complex:
+    'Multi-step reasoning, long context, many constraints, or work that needs careful planning.',
+};
 
-  if (isHotdog) {
-    const noulResult: TypeSafeNoulResult = {
-      question: "Is 'Hot dog' a sandwich?",
-      subject: 'Hot dog',
-      category: 'Food Classification',
-      truthScorePercent: 54,
-      verdict: 'CONTESTED / AMBIGUOUS',
-      confidence: 0.91,
-      criteria: "Under the Merriam-Webster definition, a hot dog is split bread containing filling. Under the Cube Rule of Food, a hot dog has bread on three sides, classifying it structurally as a taco.",
-    };
+const BUDGET_BY_COMPLEXITY: Record<TaskComplexity, 'low' | 'medium' | 'high'> = {
+  simple: 'low',
+  moderate: 'medium',
+  complex: 'high',
+};
 
-    return {
-      engine: 'Jev (TypeSafe AI System One)',
-      intent: 'decision_noul',
-      complexity: 'moderate',
-      confidence: 0.91,
-      reasoningBudget: 'medium',
-      latencyMs: Math.max(52, Date.now() - startTime + Math.floor(Math.random() * 20)),
-      primitiveType: 'noul',
-      noulResult,
-      stateExplanation: "TypeSafe Jev Noul evaluated criteria: 54% true (linguistic vs structural definition tension).",
-    };
-  }
+// ---------------------------------------------------------------------------
+// Decisions API wire types
+// ---------------------------------------------------------------------------
 
-  if (isTomato) {
-    const noulResult: TypeSafeNoulResult = {
-      question: "Is a tomato a fruit?",
-      subject: 'Tomato',
-      category: 'Botanical vs Culinary Taxonomy',
-      truthScorePercent: 92,
-      verdict: 'TRUE',
-      confidence: 0.98,
-      criteria: "Botanically, a tomato develops from the ovary in the base of the flower and contains seeds (92% true). Culinarily and legally (Nix v. Hedden 1893), it is prepared as a vegetable.",
-    };
+interface JevNoulAnswer {
+  type: 'noul';
+  noul: number;
+  confidence?: number;
+}
 
-    return {
-      engine: 'Jev (TypeSafe AI System One)',
-      intent: 'decision_noul',
-      complexity: 'simple',
-      confidence: 0.98,
-      reasoningBudget: 'low',
-      latencyMs: Math.max(46, Date.now() - startTime + Math.floor(Math.random() * 22)),
-      primitiveType: 'noul',
-      noulResult,
-      stateExplanation: "TypeSafe Jev Noul evaluated: 92% true as botanical fruit with seed-bearing ovary structure.",
-    };
-  }
+interface JevChoiceAnswer {
+  type: 'choice';
+  choice: string;
+  probabilities: Record<string, number>;
+  confidence?: number;
+}
 
-  if (isVisionCheck) {
-    const hasImageMention = /\b(attached|uploaded|\.png|\.jpg|screenshot|image|picture)\b/i.test(lower);
-    const noulResult: TypeSafeNoulResult = {
-      question: "Does this user task require analyzing an image?",
-      subject: 'Task Modality Router',
-      category: 'Model Architecture Routing',
-      truthScorePercent: hasImageMention ? 96 : 8,
-      verdict: hasImageMention ? 'TRUE' : 'FALSE',
-      confidence: 0.97,
-      criteria: "Checks whether prompt payload or state context includes visual assets requiring a multimodal vision encoder.",
-    };
+type JevAnswer = JevNoulAnswer | JevChoiceAnswer;
 
-    return {
-      engine: 'Jev (TypeSafe AI System One)',
-      intent: 'decision_noul',
-      complexity: 'simple',
-      confidence: 0.97,
-      reasoningBudget: 'low',
-      latencyMs: Math.max(42, Date.now() - startTime + Math.floor(Math.random() * 18)),
-      primitiveType: 'noul',
-      noulResult,
-      stateExplanation: `TypeSafe Jev Noul evaluated vision requirement: ${hasImageMention ? '96%' : '8%'} true.`,
-    };
-  }
+interface JevApiResponse {
+  model?: string;
+  answers?: Record<string, JevAnswer>;
+  usage?: { input_tokens?: number; output_tokens?: number; cost?: number };
+}
 
-  // 2. Check for TypeSafe "Choice" Decision Questions (Categorical distribution)
-  const isTornadoSky = /\b(tornado|storm|sky)\b/i.test(lower) && /\b(color|colour|look)\b/i.test(lower);
+interface JevQuestion {
+  type: 'noul' | 'choice';
+  instructions: string;
+  criteria?: unknown;
+}
 
-  if (isTornadoSky) {
-    const choiceResult: TypeSafeChoiceResult = {
-      question: "What color is the sky during severe tornado storm conditions?",
-      condition: "Tornado's a-comin",
-      options: [
-        { label: 'seafoam green', probabilityPercent: 60 },
-        { label: 'gray', probabilityPercent: 37 },
-        { label: 'indigo', probabilityPercent: 3 },
-      ],
-      winningChoice: 'seafoam green',
-      confidence: 0.53,
-    };
+// ---------------------------------------------------------------------------
+// Transport
+// ---------------------------------------------------------------------------
 
-    return {
-      engine: 'Jev (TypeSafe AI System One)',
-      intent: 'decision_choice',
-      complexity: 'moderate',
-      confidence: 0.88,
-      reasoningBudget: 'medium',
-      latencyMs: Math.max(55, Date.now() - startTime + Math.floor(Math.random() * 25)),
-      primitiveType: 'choice',
-      choiceResult,
-      stateExplanation: "TypeSafe Jev Choice evaluated optical distribution: seafoam green 60%, gray 37%, indigo 3%.",
-    };
-  }
-
-  // 3. Fallback General Yes/No to Noul
-  if (isGeneralYesNo && trimmed.length < 90) {
-    const noulResult: TypeSafeNoulResult = {
-      question: trimmed.endsWith('?') ? trimmed : trimmed + '?',
-      subject: trimmed.slice(0, 30),
-      category: 'Logical Evaluation',
-      truthScorePercent: 78,
-      verdict: 'TRUE',
-      confidence: 0.89,
-      criteria: "Evaluates proposition truth value against common-sense and factual criteria.",
-    };
-
-    return {
-      engine: 'Jev (TypeSafe AI System One)',
-      intent: 'decision_noul',
-      complexity: 'simple',
-      confidence: 0.89,
-      reasoningBudget: 'low',
-      latencyMs: Math.max(49, Date.now() - startTime + Math.floor(Math.random() * 22)),
-      primitiveType: 'noul',
-      noulResult,
-      stateExplanation: "TypeSafe Jev Noul proposition evaluation completed.",
-    };
-  }
-
-  // 4. Code / Technical / Creative Classification Routing
-  const isCode =
-    /\b(function|class|const|let|var|def|return|import|export|typescript|javascript|python|sql|bug|algorithm|api|endpoint|regex|component|props|state|debounce|throttle|promise)\b/i.test(
-      lower
-    ) || (/[{}<>=;()[\]]/.test(trimmed) && trimmed.length > 20);
-
-  const isTechnical =
-    /\b(architecture|database|optimize|performance|concurrency|docker|kubernetes|security|latency|throughput|protocol|thread|memory|cache)\b/i.test(
-      lower
-    );
-
-  const isCreative =
-    /\b(story|cinematic|script|scene|dialogue|character|plot|novel|poem|fantasy|scifi|director|shot|lighting|mood|anamorphic|lens)\b/i.test(
-      lower
-    );
-
-  let intent: TaskIntent = 'general_dialogue';
-  let confidence = 0.92;
-
-  if (isCode) {
-    intent = 'code_generation';
-    confidence = 0.98;
-  } else if (isTechnical) {
-    intent = 'technical_reasoning';
-    confidence = 0.96;
-  } else if (isCreative) {
-    intent = 'creative_writing';
-    confidence = 0.94;
-  }
-
-  let complexity: TaskComplexity = 'simple';
-  let reasoningBudget: 'low' | 'medium' | 'high' = 'low';
-
-  const wordCount = trimmed.split(/\s+/).length;
-
-  if (wordCount > 40 || (isCode && isTechnical) || /debounce|complex|deep/i.test(lower)) {
-    complexity = 'complex';
-    reasoningBudget = 'high';
-  } else if (wordCount > 12 || isCode || isTechnical) {
-    complexity = 'moderate';
-    reasoningBudget = 'medium';
-  }
-
-  const latencyMs = Math.max(45, Date.now() - startTime + Math.floor(Math.random() * 20));
-
+function authHeaders(apiKey: string): Record<string, string> {
   return {
+    Authorization: `Bearer ${apiKey}`,
+    'Content-Type': 'application/json',
+    'HTTP-Referer': 'https://github.com/24dp1000047/One',
+    'X-Title': 'ONe AI Studio - Jev System 1',
+  };
+}
+
+async function callJev(
+  state: string,
+  questions: Record<string, JevQuestion>,
+  apiKey: string
+): Promise<JevApiResponse> {
+  const res = await fetch(DECISIONS_ENDPOINT, {
+    method: 'POST',
+    headers: authHeaders(apiKey),
+    body: JSON.stringify({ model: JEV_MODEL, state, questions }),
+    signal: AbortSignal.timeout(JEV_TIMEOUT_MS),
+  });
+
+  const raw = await res.text();
+  let json: any = null;
+  try {
+    json = JSON.parse(raw);
+  } catch {
+    json = null;
+  }
+
+  if (!res.ok) {
+    const detail =
+      (json && typeof json.error === 'string' && json.error) ||
+      (json && json.error && json.error.message) ||
+      raw.slice(0, 300) ||
+      res.statusText;
+    throw new Error(`Jev HTTP ${res.status}: ${detail}`);
+  }
+
+  if (!json || !json.answers) {
+    throw new Error('Jev returned no answers object');
+  }
+
+  return json as JevApiResponse;
+}
+
+/** Reads a noul answer defensively. Returns null when the question went unanswered. */
+function readNoul(answers: Record<string, JevAnswer> | undefined, key: string): number | null {
+  const a = answers?.[key];
+  if (!a || a.type !== 'noul' || typeof (a as JevNoulAnswer).noul !== 'number') return null;
+  const v = (a as JevNoulAnswer).noul;
+  return Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : null;
+}
+
+/** Reads a choice answer defensively. Returns null when the question went unanswered. */
+function readChoice(
+  answers: Record<string, JevAnswer> | undefined,
+  key: string
+): { choice: string; probabilities: Record<string, number>; confidence: number } | null {
+  const a = answers?.[key];
+  if (!a || a.type !== 'choice') return null;
+  const c = a as JevChoiceAnswer;
+  if (typeof c.choice !== 'string') return null;
+  return {
+    choice: c.choice,
+    probabilities: c.probabilities || {},
+    confidence: typeof c.confidence === 'number' ? c.confidence : 0,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Mapping helpers
+// ---------------------------------------------------------------------------
+
+function verdictFromProbability(p: number): TypeSafeNoulResult['verdict'] {
+  if (p >= 0.85) return 'TRUE';
+  if (p <= 0.15) return 'FALSE';
+  return 'CONTESTED / AMBIGUOUS';
+}
+
+function isTaskIntent(v: string | undefined): v is TaskIntent {
+  return (
+    !!v &&
+    Object.prototype.hasOwnProperty.call(INTENT_CRITERIA, v)
+  );
+}
+
+function isTaskComplexity(v: string | undefined): v is TaskComplexity {
+  return !!v && Object.prototype.hasOwnProperty.call(COMPLEXITY_CRITERIA, v);
+}
+
+/** Honest degradation: Jev never ran, so nothing was classified. */
+function degradedDecision(startTime: number, error: string): JevDecision {
+  return {
+    engine: 'Jev (TypeSafe AI System One)',
+    intent: 'general_dialogue',
+    complexity: 'moderate',
+    confidence: 0,
+    reasoningBudget: 'medium',
+    latencyMs: Date.now() - startTime,
+    primitiveType: 'classifier',
+    stateExplanation: 'Jev was unreachable, so no real classification was made. Defaults applied.',
+    degraded: true,
+    error,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
+/**
+ * Classifies a prompt with the real Jev decision model and, when the prompt is a
+ * decision question, evaluates it with the matching TypeSafe primitive.
+ *
+ * @param prompt  The user's raw message.
+ * @param options Optional candidate labels. When two or more are supplied and Jev
+ *                classifies the prompt as `decision_choice`, a second Jev call runs
+ *                a real `choice` question over those exact options.
+ */
+export async function evaluateWithJev(prompt: string, options?: string[]): Promise<JevDecision> {
+  const startTime = Date.now();
+  const state = prompt.trim();
+  const apiKey = (process.env.OPENROUTER_API_KEY || '').trim();
+
+  if (!apiKey) {
+    return degradedDecision(startTime, 'OPENROUTER_API_KEY is not set in backend/.env');
+  }
+
+  if (!state) {
+    return degradedDecision(startTime, 'Empty prompt');
+  }
+
+  // --- Call 1: routing + truth evaluation in a single request -----------------
+  // All questions share one `state`, so the input prefix is prefixed and billed once.
+  const questions: Record<string, JevQuestion> = {
+    intent: {
+      type: 'choice',
+      instructions: 'Classify the primary task the user is asking the assistant to perform.',
+      criteria: INTENT_CRITERIA,
+    },
+    complexity: {
+      type: 'choice',
+      instructions: 'How much reasoning does answering this request correctly require?',
+      criteria: COMPLEXITY_CRITERIA,
+    },
+    needs_truth_eval: {
+      type: 'noul',
+      instructions:
+        'Is the user asking the assistant to judge whether a factual proposition, classification or claim is true?',
+      criteria: {
+        true: 'The request asks for a verdict on the truth, correctness or classification of a claim.',
+        false:
+          'The request asks for content to be produced or a task performed, rather than a truth verdict.',
+      },
+    },
+    claim_is_true: {
+      type: 'noul',
+      instructions: 'Is the central factual proposition asserted in the request true?',
+      criteria: {
+        true: 'The proposition is accurate under the standard definition of the terms it uses.',
+        false: 'The proposition is inaccurate, or rests on a category error.',
+      },
+    },
+  };
+
+  let first: JevApiResponse;
+  try {
+    first = await callJev(state, questions, apiKey);
+  } catch (err: any) {
+    console.error('[Jev] Decisions API call failed:', err.message);
+    return degradedDecision(startTime, err.message);
+  }
+
+  const intentAnswer = readChoice(first.answers, 'intent');
+  const complexityAnswer = readChoice(first.answers, 'complexity');
+  const needsTruth = readNoul(first.answers, 'needs_truth_eval');
+  const claimTrue = readNoul(first.answers, 'claim_is_true');
+
+  const intent: TaskIntent = isTaskIntent(intentAnswer?.choice)
+    ? intentAnswer!.choice
+    : 'general_dialogue';
+  const complexity: TaskComplexity = isTaskComplexity(complexityAnswer?.choice)
+    ? complexityAnswer!.choice
+    : 'moderate';
+
+  // Confidence comes from the intent distribution. `confidence` measures how
+  // concentrated the distribution is, not the winning option's probability.
+  const confidence = intentAnswer?.confidence ?? 0;
+  const reasoningBudget = BUDGET_BY_COMPLEXITY[complexity];
+
+  const wantsTruthEval = needsTruth !== null && needsTruth >= TRUTH_QUESTION_THRESHOLD;
+  const validOptions = (options || []).map((o) => String(o).trim()).filter(Boolean);
+
+  const base: JevDecision = {
     engine: 'Jev (TypeSafe AI System One)',
     intent,
     complexity,
     confidence,
     reasoningBudget,
-    latencyMs,
+    latencyMs: Date.now() - startTime,
     primitiveType: 'classifier',
-    stateExplanation: `Non-autoregressive intent classified as ${intent} with ${reasoningBudget} reasoning budget.`,
+    stateExplanation:
+      `Jev classified this as ${intent} at ${complexity} complexity ` +
+      `(p=${(intentAnswer?.probabilities?.[intent] ?? 0).toFixed(3)}, ` +
+      `distribution confidence=${confidence.toFixed(3)}).`,
   };
+
+  // --- Call 2a: real Choice primitive over caller-supplied options -----------
+  if (validOptions.length >= 2 && intent === 'decision_choice') {
+    try {
+      const choiceCall = await callJev(
+        state,
+        {
+          pick: {
+            type: 'choice',
+            instructions: 'Which of these options is the correct or most likely answer to the request?',
+            criteria: Object.fromEntries(validOptions.map((o) => [o, `The answer is "${o}".`])),
+          },
+        },
+        apiKey
+      );
+
+      const pick = readChoice(choiceCall.answers, 'pick');
+      if (pick) {
+        const ranked = Object.entries(pick.probabilities)
+          .sort((a, b) => b[1] - a[1])
+          .map(([label, p]) => ({
+            label,
+            probabilityPercent: Math.round(p * 1000) / 10,
+          }));
+
+        const choiceResult: TypeSafeChoiceResult = {
+          question: state,
+          options: ranked,
+          winningChoice: pick.choice,
+          confidence: pick.confidence,
+        };
+
+        return {
+          ...base,
+          primitiveType: 'choice',
+          latencyMs: Date.now() - startTime,
+          choiceResult,
+          stateExplanation:
+            `Jev Choice over ${validOptions.length} options picked "${pick.choice}" ` +
+            `(p=${(pick.probabilities[pick.choice] ?? 0).toFixed(3)}, confidence=${pick.confidence.toFixed(3)}).`,
+        };
+      }
+    } catch (err: any) {
+      console.warn('[Jev] Choice primitive failed, falling back to classifier:', err.message);
+    }
+  }
+
+  // --- Call 2b: real Noul primitive for truth questions ----------------------
+  if (wantsTruthEval && claimTrue !== null) {
+    const noulResult: TypeSafeNoulResult = {
+      question: state.endsWith('?') ? state : `${state}?`,
+      subject: state.slice(0, 60),
+      category: 'Jev Noul truth evaluation',
+      truthScorePercent: Math.round(claimTrue * 100),
+      verdict: verdictFromProbability(claimTrue),
+      confidence: needsTruth ?? claimTrue,
+      criteria:
+        'Jev Noul evaluated the central proposition against the standard definitions of the terms used. ' +
+        'Probability is P(true); the verdict band is TRUE >= 0.85, FALSE <= 0.15, otherwise contested.',
+    };
+
+    return {
+      ...base,
+      primitiveType: 'noul',
+      latencyMs: Date.now() - startTime,
+      noulResult,
+      stateExplanation:
+        `Jev Noul returned P(true)=${claimTrue.toFixed(3)} for the central claim, ` +
+        `banded as ${noulResult.verdict}.`,
+    };
+  }
+
+  return { ...base, latencyMs: Date.now() - startTime };
 }
+
+/** Exposed so callers can report which Jev version is live. */
+export const JEV_MODEL_ID = JEV_MODEL;
