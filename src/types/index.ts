@@ -52,6 +52,33 @@ export interface ChatMessage {
     type: string;
     url: string;
   }[];
+  jevDecision?: {
+    engine?: string;
+    intent: string;
+    complexity: string;
+    confidence: number;
+    reasoningBudget: string;
+    latencyMs: number;
+    primitiveType?: 'noul' | 'choice' | 'classifier';
+    noulResult?: {
+      question: string;
+      subject: string;
+      category: string;
+      truthScorePercent: number;
+      verdict: string;
+      confidence: number;
+      criteria: string;
+    };
+    choiceResult?: {
+      question: string;
+      options: { label: string; probabilityPercent: number }[];
+      winningChoice: string;
+      confidence: number;
+      condition?: string;
+    };
+    stateExplanation?: string;
+  };
+  suggestedFollowUps?: string[];
 }
 
 export interface Conversation {

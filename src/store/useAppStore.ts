@@ -513,58 +513,80 @@ I am your generative director. What cinematic world or visual script are we craf
       return { conversations: newConvs, isAiTyping: true, orbState: 'thinking' };
     });
 
-    // Simulate AI thinking & response
-    setTimeout(() => {
-      const aiMsgId = 'msg-ai-' + Date.now();
-      const mockAnswers = [
-        `Here is an optimized storyboard concept derived from your prompt:
+    // Dual-Brain Execution Pipeline (Jev System 1 -> Inkling System 2)
+    (async () => {
+      try {
+        const history = updatedConv.messages.map((m) => ({
+          role: m.role === 'assistant' ? 'assistant' : 'user',
+          content: m.content,
+        }));
 
-### Scene Analysis:
-1. **Dynamic Lighting:** High contrast illumination using warm amber (#FFD600) rim highlights on dark obsidian architecture.
-2. **Atmospheric Depth:** Layered ground fog and micro-particle dispersion.
-3. **Pacing:** Begins with a 3.5-second contemplative establishing dolly, transitioning into a dynamic 4-second action tracking shot.
+        const res = await fetch('http://localhost:5000/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: content, history }),
+        });
 
-Would you like me to push this directly into your **Text-to-Video Studio**?`,
-        `Fascinating visual direction! To capture that exact cinematic essence, I recommend adding:  
-- **Lens:** Anamorphic 35mm T1.5  
-- **Shutter:** 180° cinematic blur  
-- **Palette:** Obsidian black (#090909) with neon canary yellow (#FFD600) accents.  
+        const data = await res.json();
+        const aiMsgId = 'msg-ai-' + Date.now();
 
-You can also test prompt variations in the **Creative Playground**.`,
-        `Analyzing shot composition...  
-The prompt will produce an ultra-crisp photorealistic rendering with volumetric god rays and fluid particle motion. I've formulated a 3-scene camera plan for this sequence.`,
-      ];
+        let aiResponseText = data.response;
+        if (!data.success && data.error) {
+          aiResponseText = `⚠️ **Backend Pipeline Notice:** ${data.error}`;
+        }
 
-      const chosenResponse = mockAnswers[Math.floor(Math.random() * mockAnswers.length)];
-
-      const aiMessage: ChatMessage = {
-        id: aiMsgId,
-        role: 'assistant',
-        model: 'ONe Omni-4 Cinema',
-        content: chosenResponse,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        suggestedAction: {
-          label: 'Send to Video Studio',
-          actionType: 'open-studio',
-          payload: content,
-        },
-      };
-
-      set((state) => {
-        const finalConvs = state.conversations.map((c) =>
-          c.id === conv.id ? { ...c, messages: [...c.messages, aiMessage], updatedAt: 'Just now' } : c
-        );
-        saveStorage('conversations', finalConvs);
-        return {
-          conversations: finalConvs,
-          isAiTyping: false,
-          orbState: 'idle',
+        const aiMessage: ChatMessage = {
+          id: aiMsgId,
+          role: 'assistant',
+          model: data.model || 'Thinking Machines Inkling',
+          content: aiResponseText || '(No response received)',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          jevDecision: data.jevDecision,
+          suggestedFollowUps: data.suggestedFollowUps || [],
+          suggestedAction: {
+            label: 'Send to Video Studio',
+            actionType: 'open-studio',
+            payload: content,
+          },
         };
-      });
-    }, 1200);
+
+        set((state) => {
+          const finalConvs = state.conversations.map((c) =>
+            c.id === conv.id ? { ...c, messages: [...c.messages, aiMessage], updatedAt: 'Just now' } : c
+          );
+          saveStorage('conversations', finalConvs);
+          return {
+            conversations: finalConvs,
+            isAiTyping: false,
+            orbState: 'idle',
+          };
+        });
+      } catch (err: any) {
+        console.error('Dual brain pipeline connection error:', err);
+        const fallbackMsg: ChatMessage = {
+          id: 'msg-ai-err-' + Date.now(),
+          role: 'assistant',
+          model: 'Thinking Machines Inkling',
+          content: `⚠️ **Backend Connection Error:** Could not connect to http://localhost:5000/api/chat.\n\nPlease verify that the backend server is running (\`npm run dev\` in \`backend/\`). Error: ${err.message}`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        };
+
+        set((state) => {
+          const finalConvs = state.conversations.map((c) =>
+            c.id === conv.id ? { ...c, messages: [...c.messages, fallbackMsg], updatedAt: 'Just now' } : c
+          );
+          saveStorage('conversations', finalConvs);
+          return {
+            conversations: finalConvs,
+            isAiTyping: false,
+            orbState: 'idle',
+          };
+        });
+      }
+    })();
   },
   regenerateLastMessage: () => {
-    const { activeConversationId, conversations } = get();
+    const { activeConversationId, conversations, sendMessage } = get();
     const conv = conversations.find((c) => c.id === activeConversationId);
     if (!conv || conv.messages.length < 2) return;
 
@@ -578,36 +600,10 @@ The prompt will produce an ultra-crisp photorealistic rendering with volumetric 
       conversations: state.conversations.map((c) =>
         c.id === conv.id ? { ...c, messages: trimmed } : c
       ),
-      isAiTyping: true,
-      orbState: 'thinking',
     }));
 
-    setTimeout(() => {
-      const aiMessage: ChatMessage = {
-        id: 'msg-regen-' + Date.now(),
-        role: 'assistant',
-        model: 'ONe Omni-4 Cinema',
-        content: `*Regenerated perspective:*\n\nHere is an alternative high-velocity camera treatment. Let's switch from a static wide view into an FPV drone dive traveling at 60mph between glowing architectural arches. Volumetric light beams scatter at 45° angles.`,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        suggestedAction: {
-          label: 'Send to Video Studio',
-          actionType: 'open-studio',
-          payload: lastUserMsg.content,
-        },
-      };
-
-      set((state) => {
-        const finalConvs = state.conversations.map((c) =>
-          c.id === conv.id ? { ...c, messages: [...c.messages, aiMessage] } : c
-        );
-        saveStorage('conversations', finalConvs);
-        return {
-          conversations: finalConvs,
-          isAiTyping: false,
-          orbState: 'idle',
-        };
-      });
-    }, 1100);
+    // Trigger fresh generation with dual brain
+    sendMessage(lastUserMsg.content, lastUserMsg.attachments, true);
   },
 
   // Text-to-Video Studio
@@ -633,18 +629,40 @@ The prompt will produce an ultra-crisp photorealistic rendering with volumetric 
 
   enhanceStudioPrompt: () => {
     set({ isEnhancingPrompt: true });
-    get().addToast({ type: 'info', title: 'Magic Enhancer', message: 'Synthesizing cinematic 8K master prompt...' });
+    get().addToast({ type: 'info', title: 'Thinking Machines Inkling', message: 'Enhancing prompt via Jev & Inkling pipeline...' });
 
-    setTimeout(() => {
+    (async () => {
       const base = get().studioPrompt.trim() || 'Futuristic cybernetic city';
-      const enhanced = `Cinematic 8K master shot, hyper-detailed render of ${base}, dramatic volumetric atmospheric haze, anamorphic 35mm T1.3 lens, pristine golden amber highlights (#FFD600) reflecting on wet dark obsidian surfaces (#090909), Unreal Engine 5.4 Lumen global illumination, 60fps high shutter motion blur, photorealistic depth of field.`;
-      set({
-        enhancedPrompt: enhanced,
-        studioPrompt: enhanced,
-        isEnhancingPrompt: false,
-      });
-      get().addToast({ type: 'success', title: 'Prompt Enhanced!', message: 'Cinematic camera and lighting descriptors added.' });
-    }, 900);
+      try {
+        const res = await fetch('http://localhost:5000/api/enhance-prompt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: base }),
+        });
+        const data = await res.json();
+        const enhanced = data.enhancedPrompt || base;
+
+        set({
+          enhancedPrompt: enhanced,
+          studioPrompt: enhanced,
+          isEnhancingPrompt: false,
+        });
+        get().addToast({
+          type: 'success',
+          title: 'Prompt Enhanced by Inkling!',
+          message: `Jev Intent: ${data.jevDecision?.intent || 'creative'} (${data.executionTimeMs || 0}ms)`,
+        });
+      } catch (err: any) {
+        // Fallback enhancement if backend offline
+        const fallbackEnhanced = `Cinematic 8K master shot, hyper-detailed render of ${base}, dramatic volumetric atmospheric haze, anamorphic 35mm T1.3 lens, pristine golden amber highlights (#FFD600) reflecting on wet dark obsidian surfaces (#090909), Unreal Engine 5.4 Lumen global illumination, 60fps high shutter motion blur, photorealistic depth of field.`;
+        set({
+          enhancedPrompt: fallbackEnhanced,
+          studioPrompt: fallbackEnhanced,
+          isEnhancingPrompt: false,
+        });
+        get().addToast({ type: 'warning', title: 'Local Fallback Applied', message: 'Backend unreachable, generated local cinematic preset.' });
+      }
+    })();
   },
 
   generateStoryboardFromPrompt: (promptText) => {

@@ -62,29 +62,33 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ onOpenSidebarMobile }) => {
           </button>
 
           <div className="flex flex-col min-w-0 font-mono">
-            <h2 className="text-xs sm:text-sm font-semibold text-white tracking-widest uppercase truncate">
-              {activeConv ? activeConv.title : 'Cinematic Scripting Session'}
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-xs sm:text-sm font-bold text-white tracking-wider uppercase truncate">
+                DUAL-BRAIN AI STUDIO
+              </h2>
+              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] text-emerald-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Jev + Inkling Pipeline
+              </span>
+            </div>
             <span className="text-[10px] text-zinc-500 truncate">
-              {activeConv?.messages.length || 0} MESSAGES • 03 // DIRECTOR DIALOGUE
+              SYSTEM 1: TYPESAFE JEV (&lt;100MS) • SYSTEM 2: THINKING MACHINES INKLING
             </span>
           </div>
         </div>
 
-        {/* Model Picker & Export */}
+        {/* Engine Indicators & Export */}
         <div className="flex items-center gap-2">
-          <select
-            value={selectedModel}
-            onChange={(e) => {
-              setSelectedModel(e.target.value);
-              addToast({ type: 'info', title: 'Model Switched', message: e.target.value });
-            }}
-            className="bg-[#080A10] border border-[#181C26] text-zinc-200 text-xs rounded-full px-3 py-1.5 focus:outline-none focus:border-[#A5C4F2] font-mono cursor-pointer"
-          >
-            <option value="ONe Omni-4 Cinema">ONe Omni-4 Cinema (Default)</option>
-            <option value="ONe WorldBuilder 3D">ONe WorldBuilder 3D</option>
-            <option value="ONe Fast-Draft 2.0">ONe Fast-Draft 2.0</option>
-          </select>
+          <div className="hidden md:flex items-center gap-2 font-mono text-[10px]">
+            <span className="px-2 py-1 rounded bg-[#0A120D] text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+              <span>⚡ Jev:</span>
+              <span className="text-zinc-400">&lt;100ms Decisions</span>
+            </span>
+            <span className="px-2 py-1 rounded bg-[#101018] text-brand-yellow border border-brand-yellow/30 flex items-center gap-1">
+              <span>🧠 Inkling:</span>
+              <span className="text-zinc-400">Deep Reasoning</span>
+            </span>
+          </div>
 
           <button
             onClick={handleExportChat}
@@ -94,6 +98,32 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ onOpenSidebarMobile }) => {
             <Download className="w-4 h-4" />
           </button>
         </div>
+      </div>
+
+      {/* Quick Test Benchmarks Bar (TypeSafe Jev & Inkling Live Decision Tests) */}
+      <div className="px-4 py-2 border-b border-[#141822] bg-[#07090F]/90 flex items-center gap-2 overflow-x-auto text-xs font-mono scrollbar-none">
+        <span className="text-[10px] text-zinc-400 uppercase tracking-wider shrink-0 flex items-center gap-1 font-bold">
+          <Sparkles className="w-3 h-3 text-brand-yellow" />
+          Quick Test Benchmarks:
+        </span>
+        {[
+          { label: '🍦 Ice Cream Sandwich? (Jev Noul)', prompt: 'Is an ice cream sandwich a sandwich?' },
+          { label: '🌭 Hotdog a Sandwich? (Jev Noul)', prompt: 'Is a hotdog a sandwich?' },
+          { label: '🌪️ Tornado Sky Color? (Jev Choice)', prompt: 'What color is the sky when a tornado is coming?' },
+          { label: '🍅 Tomato: Fruit or Veggie? (Jev Noul)', prompt: 'Is a tomato a fruit?' },
+          { label: '⚡ Debounce in TypeScript (Inkling Reasoning)', prompt: 'Write a TypeScript debounce function with leading and trailing options' },
+          { label: '🎬 Cyberpunk Noir Scene (Creative Budget)', prompt: 'Design an atmospheric cyberpunk alley scene with anamorphic 35mm lens and volumetric sodium vapor lighting' },
+        ].map((benchmark, bIdx) => (
+          <button
+            key={bIdx}
+            disabled={isAiTyping}
+            onClick={() => sendMessage(benchmark.prompt)}
+            className="px-2.5 py-1 rounded-lg bg-[#111622] hover:bg-[#1a2336] border border-[#20293d] hover:border-emerald-400/50 text-zinc-300 hover:text-white shrink-0 transition-all text-[11px] cursor-pointer shadow-sm active:scale-95"
+            title={`Run live benchmark: "${benchmark.prompt}"`}
+          >
+            {benchmark.label}
+          </button>
+        ))}
       </div>
 
       {/* Messages Scroll Area */}
@@ -112,18 +142,30 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ onOpenSidebarMobile }) => {
           );
         })}
 
-        {/* Simulated AI Typing Indicator */}
+        {/* Dual-Brain Execution Indicator */}
         {isAiTyping && (
-          <div className="flex items-center gap-3 p-4 rounded-2xl bg-[#0f0f0f] border border-[#1f1f1f] text-xs font-mono text-zinc-400">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-brand-yellow/40 flex items-center justify-center text-brand-yellow animate-pulse">
-              <Sparkles className="w-4 h-4" />
+          <div className="p-4 rounded-xl bg-[#070A0F] border border-[#182236] text-xs font-mono text-zinc-300 shadow-xl space-y-2.5 animate-fadeIn">
+            <div className="flex items-center justify-between border-b border-[#182236] pb-2">
+              <span className="flex items-center gap-2 text-white font-bold">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                Dual-Brain Pipeline In Progress...
+              </span>
+              <span className="text-[10px] text-zinc-500 font-mono">Live Forward Pass</span>
             </div>
-            <div className="space-y-1">
-              <span className="text-white font-medium">ONe Omni-4 Director is analyzing scene tokens...</span>
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-brand-yellow animate-bounce" />
-                <span className="w-1.5 h-1.5 rounded-full bg-brand-yellow animate-bounce [animation-delay:0.2s]" />
-                <span className="w-1.5 h-1.5 rounded-full bg-brand-yellow animate-bounce [animation-delay:0.4s]" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+              <div className="p-2.5 rounded-lg bg-[#0A120D] border border-emerald-500/30 flex items-center gap-2.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-bounce" />
+                <div>
+                  <span className="text-emerald-400 font-bold block">1. TypeSafe AI Jev (System 1)</span>
+                  <span className="text-zinc-400 text-[10px]">Evaluating Noul/Choice decision (&lt;100ms)</span>
+                </div>
+              </div>
+              <div className="p-2.5 rounded-lg bg-[#101018] border border-brand-yellow/30 flex items-center gap-2.5">
+                <span className="w-2 h-2 rounded-full bg-brand-yellow animate-bounce [animation-delay:0.3s]" />
+                <div>
+                  <span className="text-brand-yellow font-bold block">2. Thinking Machines Inkling (System 2)</span>
+                  <span className="text-zinc-400 text-[10px]">Deep reasoning & synthesis</span>
+                </div>
               </div>
             </div>
           </div>

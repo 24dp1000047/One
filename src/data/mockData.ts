@@ -239,7 +239,19 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
       {
         id: 'm-2',
         role: 'assistant',
-        model: 'ONe Omni-4 Cinema',
+        model: 'Thinking Machines Inkling',
+        jevDecision: {
+          intent: 'creative_writing',
+          complexity: 'complex',
+          confidence: 0.96,
+          reasoningBudget: 'high',
+          latencyMs: 64,
+        },
+        suggestedFollowUps: [
+          'Can you break this into camera motion prompts for each scene?',
+          'What audio and sound design cues would match this sequence?',
+          'Can we introduce a secondary antagonist character in Scene 2?',
+        ],
         content: `Here is a high-impact opening concept tailored for **ONe Studio** video generation:
 
 ### Title: **Neon Odyssey: Shinjuku 2099**
@@ -279,7 +291,19 @@ Would you like to send this master prompt directly into the **Text-to-Video Stud
       {
         id: 'm-4',
         role: 'assistant',
-        model: 'ONe Omni-4 Cinema',
+        model: 'Thinking Machines Inkling',
+        jevDecision: {
+          intent: 'technical_reasoning',
+          complexity: 'moderate',
+          confidence: 0.94,
+          reasoningBudget: 'medium',
+          latencyMs: 52,
+        },
+        suggestedFollowUps: [
+          'How do shutter angles affect wet asphalt motion blur?',
+          'Which Unreal Engine 5.4 Lumen settings optimize volumetric rain?',
+          'Can you write the exact color grading LUT parameters?',
+        ],
         content: `For dark, rain-drenched environments, configure these prompt descriptors:
 
 1. **Fresnel Reflections:** \`anamorphic lens flares, wet obsidian asphalt, specular highlights\`
@@ -293,27 +317,65 @@ You can press the **Magic Prompt Enhancer** in Studio to auto-inject these light
   },
   {
     id: 'conv-2',
-    title: 'Character Design: Zero-G Astronaut',
+    title: 'TypeSafe Decision: Ice Cream Sandwich',
     createdAt: 'Yesterday',
     updatedAt: 'Yesterday',
     messages: [
       {
         id: 'm-5',
         role: 'user',
-        content: 'Design an EVA spacesuit with golden reflective visor and modular thruster packs.',
+        content: 'Is an ice cream sandwich a sandwich?',
         timestamp: '3:15 PM',
       },
       {
         id: 'm-6',
         role: 'assistant',
-        model: 'ONe Omni-4 Cinema',
-        content: 'Here is the detailed character spec: **The Icarus Mark-VII Deep Void Suit** with dual cold-gas vernier thrusters, magnetic tether carabiners, and an electro-chromic gold visor that mirrors planetary rings.',
-        timestamp: '3:16 PM',
-        suggestedAction: {
-          label: 'Create Video with this Character',
-          actionType: 'open-studio',
-          payload: 'Deep space EVA astronaut with golden mirror visor drifting outside orbital shipyard, planetary rings in background, photorealistic 8K.',
+        model: 'Thinking Machines Inkling',
+        jevDecision: {
+          engine: 'Jev (TypeSafe AI System One)',
+          intent: 'decision_noul',
+          complexity: 'simple',
+          confidence: 0.94,
+          reasoningBudget: 'low',
+          latencyMs: 48,
+          primitiveType: 'noul',
+          noulResult: {
+            question: "Is 'Ice cream sandwich' a sandwich?",
+            subject: 'Ice cream sandwich',
+            category: 'Food Classification',
+            truthScorePercent: 33,
+            verdict: 'CONTESTED / AMBIGUOUS',
+            confidence: 0.94,
+            criteria: "A sandwich is defined as a dish where meat, cheese, or savory filling is held between two pieces of bread. An ice cream sandwich consists of dairy ice cream between wafer cookies, functioning taxonomically as a confection.",
+          },
         },
+        suggestedFollowUps: [
+          'What about a hotdog: is it structurally a taco or a sandwich?',
+          'How does the legal USDA definition define a sandwich?',
+          'What is the Cube Rule of Food definition?',
+        ],
+        content: `### 🎯 Definitive Verdict: **33% True (Taxonomically Contested)**
+
+TypeSafe AI's **Jev Engine** evaluated this proposition in **48ms** against standard sandwich taxonomies and determined a **33% truth score**. Here is the deep reasoning breakdown from **Thinking Machines Inkling**:
+
+---
+
+### 1. Structural Argument (Why it resembles a sandwich)
+* **The Layering Rule:** An ice cream sandwich shares the structural topology of a sandwich: two rigid carbohydrates enclosing a softer filling.
+* **Linguistic Convention:** Common English nomenclature refers to it as a "sandwich".
+
+---
+
+### 2. Culinary & Legal Counterarguments (Why it fails the 100% test)
+* **Carbohydrate Matrix:** The enclosing layers are **wafer cookies or biscuits**, not leavened bread.
+* **Filling State:** The interior is frozen aerated dairy confection, which undergoes phase change at room temperature.
+* **USDA Standard:** The USDA Food Safety and Inspection Service defines a sandwich as containing at least 35% cooked meat and no more than 50% bread. 
+
+---
+
+### 💡 Conclusion
+An ice cream sandwich is a **metaphorical or structural sandwich**, but culinarily classified as an **ice cream novelty / confection**. Jev was not tricked by the word *"sandwich"* in its title!`,
+        timestamp: '3:16 PM',
       },
     ],
   },
