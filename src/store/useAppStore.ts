@@ -23,7 +23,7 @@ const DEFAULT_SETTINGS: UserSettings = {
   name: 'Alex Vance',
   handle: '@alex_creator',
   avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
-  bio: 'Visual director & digital artist crafting cinematic worlds with ONe AI.',
+  bio: 'Visual director & digital artist crafting cinematic worlds with ONᵉ AI.',
   accentColor: 'yellow',
   themeMode: 'dark',
   soundEnabled: true,
@@ -433,8 +433,8 @@ export const useAppStore = create<AppState>((set, get) => ({
             {
               id: 'm-welcome',
               role: 'assistant',
-              model: 'ONe Omni-4 Cinema',
-              content: `Welcome to **ONe Creative Chat**.  
+              model: 'ONᵉ Omni-4 Cinema',
+              content: `Welcome to **ONᵉ Creative Chat**.  
 I am your generative director. What cinematic world or visual script are we crafting today?`,
               timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             },

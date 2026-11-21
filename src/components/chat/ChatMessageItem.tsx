@@ -190,7 +190,7 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-white">
-              {isUser ? settings.name : 'ONe Director'}
+              {isUser ? settings.name : 'ONᵉ Director'}
             </span>
             {!isUser && (
               <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-brand-yellow/15 text-brand-yellow border border-brand-yellow/30 font-medium">

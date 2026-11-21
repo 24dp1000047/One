@@ -252,7 +252,7 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
           'What audio and sound design cues would match this sequence?',
           'Can we introduce a secondary antagonist character in Scene 2?',
         ],
-        content: `Here is a high-impact opening concept tailored for **ONe Studio** video generation:
+        content: `Here is a high-impact opening concept tailored for **ONᵉ Studio** video generation:
 
 ### Title: **Neon Odyssey: Shinjuku 2099**
 
@@ -308,7 +308,7 @@ Would you like to send this master prompt directly into the **Text-to-Video Stud
 
 1. **Fresnel Reflections:** \`anamorphic lens flares, wet obsidian asphalt, specular highlights\`
 2. **Volumetric Atmosphere:** \`dense localized ground mist, sodium vapor backlighting, orange rim light\`
-3. **Color Contrast:** Keep shadows at **#090909** and key highlights in **#FFD600 (Signature Yellow)** and **#FF7A1A (Accent Amber)** for the unmistakable ONe aesthetic.
+3. **Color Contrast:** Keep shadows at **#090909** and key highlights in **#FFD600 (Signature Yellow)** and **#FF7A1A (Accent Amber)** for the unmistakable ONᵉ aesthetic.
 
 You can press the **Magic Prompt Enhancer** in Studio to auto-inject these lighting cues into your prompt!`,
         timestamp: '10:49 AM',
@@ -496,7 +496,7 @@ export const MOCK_AI_RESPONSES = [
   "I've analyzed your creative direction. The visual pacing benefits from starting with an extreme macro close-up before pulling out into a sweeping wide shot. Let's incorporate cinematic anamorphic lens flares to accentuate the contrast.",
   "Here is an enhanced cinematic storyboard structure designed to maximize visual retention and rhythm:",
   "Great concept! I've automatically broken this into 3 coherent scenes with matched lighting continuity and velocity vectors.",
-  "This aesthetic pairs perfectly with ONe's Cyberpunk Neon render pipeline. Notice how the amber highlights (#FFD600) balance against the obsidian background (#090909).",
+  "This aesthetic pairs perfectly with ONᵉ's Cyberpunk Neon render pipeline. Notice how the amber highlights (#FFD600) balance against the obsidian background (#090909).",
 ];
 
 export const SUGGESTED_CHAT_PROMPTS = [

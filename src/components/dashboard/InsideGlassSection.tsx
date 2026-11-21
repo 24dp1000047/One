@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { ArrowUpRight, Play, Film, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../store/useAppStore';
+import { BrandName } from '../common/BrandName';
 
 export const InsideGlassSection: React.FC = () => {
   const navigate = useNavigate();
@@ -115,7 +116,11 @@ export const InsideGlassSection: React.FC = () => {
       <div className="flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-[#E5A866] shadow-[0_0_8px_#E5A866]" />
-          <span className="tracking-widest uppercase text-white font-medium">INSIDE ONe STUDIO</span>
+          <span className="tracking-widest uppercase text-white font-medium inline-flex items-baseline gap-1">
+            <span>INSIDE</span>
+            <BrandName className="text-white" />
+            <span>STUDIO</span>
+          </span>
         </div>
         <div className="text-zinc-500 tracking-widest text-[11px] uppercase">
           Opening 21 November

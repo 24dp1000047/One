@@ -36,7 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileMenuToggle }) => {
     if (path.startsWith('/explore')) return { title: 'Explore Showcase', code: '05' };
     if (path.startsWith('/creations')) return { title: 'My Creations', code: '06' };
     if (path.startsWith('/settings')) return { title: 'Workspace Settings', code: '07' };
-    return { title: 'ONe Studio', code: '00' };
+    return { title: 'ONᵉ Studio', code: '00' };
   };
 
   const pageInfo = getPageInfo();
@@ -59,7 +59,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileMenuToggle }) => {
     {
       id: 3,
       title: 'Weekly Allowance',
-      desc: 'Added +1,000 ONe Energy to your creative account.',
+      desc: 'Added +1,000 ONᵉ Energy to your creative account.',
       time: '1d ago',
       unread: false,
     },
@@ -141,7 +141,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileMenuToggle }) => {
         <div 
           onClick={() => navigate('/settings')}
           className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-full capsule-control hover:border-[#E5A866]/40 text-xs font-mono transition-all"
-          title="Your available ONe Energy credits"
+          title="Your available ONᵉ Energy credits"
         >
           <Zap className="w-3.5 h-3.5 text-[#E5A866]" />
           <span className="text-white font-medium">{settings.energyCredits.toLocaleString()}</span>

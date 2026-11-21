@@ -96,7 +96,7 @@ export const Explore: React.FC = () => {
 
         <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
           <span className="w-1.5 h-1.5 rounded-full bg-[#E5A866]" />
-          <span>CURATED DAILY BY ONe EDITORIAL</span>
+          <span>CURATED DAILY BY ONᵉ EDITORIAL</span>
         </div>
       </div>
 

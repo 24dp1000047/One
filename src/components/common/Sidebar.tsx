@@ -14,6 +14,7 @@ import {
   Plus
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
+import { BrandName } from './BrandName';
 
 export const Sidebar: React.FC = () => {
   const isCollapsed = useAppStore((state) => state.isSidebarCollapsed);
@@ -88,7 +89,7 @@ export const Sidebar: React.FC = () => {
           {!isCollapsed && (
             <div className="flex flex-col min-w-0 transition-opacity duration-200">
               <div className="flex items-center gap-1.5">
-                <span className="font-display font-bold text-lg tracking-wider text-white">ONe</span>
+                <BrandName className="font-bold text-xl tracking-wider text-white" />
                 <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-white/10 text-zinc-300 border border-white/10 uppercase tracking-widest">
                   v4.0
                 </span>

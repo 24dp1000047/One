@@ -24,7 +24,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ onOpenSidebarMobile }) => {
   const sendMessage = useAppStore((state) => state.sendMessage);
   const addToast = useAppStore((state) => state.addToast);
 
-  const [selectedModel, setSelectedModel] = useState('ONe Omni-4 Cinema');
+  const [selectedModel, setSelectedModel] = useState('ONᵉ Omni-4 Cinema');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const activeConv = conversations.find((c) => c.id === activeId) || conversations[0];

@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowUpRight, ArrowDown, MessageSquare } from 'lucide-react';
 import { AsciiVisualizer } from '../common/AsciiVisualizer';
+import { BrandName } from '../common/BrandName';
 import { useNavigate } from 'react-router-dom';
 
 export const HeroBanner: React.FC = () => {
@@ -24,7 +25,10 @@ export const HeroBanner: React.FC = () => {
       <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 pb-12 font-mono text-xs tracking-widest text-[#8A94A6]">
         <div className="flex items-center gap-2">
           <span className="w-6 h-px bg-zinc-600 inline-block" />
-          <span className="text-zinc-400">ONe.STUDIO // GENERATIVE CINEMA & DIRECTION</span>
+          <span className="text-zinc-400 inline-flex items-baseline">
+            <BrandName className="text-zinc-200" />
+            <span>.STUDIO // GENERATIVE CINEMA & DIRECTION</span>
+          </span>
         </div>
         <div className="hidden sm:block text-[11px] text-zinc-500 uppercase tracking-widest">
           ONE SPACE. INFINITE POSSIBILITIES.

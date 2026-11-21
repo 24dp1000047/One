@@ -283,9 +283,9 @@ export const CommandPalette: React.FC = () => {
                 <span>↵ Select</span>
                 <span>ESC Close</span>
               </div>
-              <div className="flex items-center gap-1.5 text-brand-yellow">
+              <div className="flex items-center gap-1.5 text-brand-yellow font-mono text-[11px]">
                 <span className="w-1.5 h-1.5 rounded-full bg-brand-yellow animate-pulse" />
-                <span>ONe Omni-4</span>
+                <span>ONᵉ Omni-4</span>
               </div>
             </div>
           </motion.div>

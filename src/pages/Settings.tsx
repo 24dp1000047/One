@@ -56,7 +56,7 @@ export const Settings: React.FC = () => {
     addToast({
       type: 'success',
       title: 'Energy Refilled!',
-      message: 'Added +1,000 ONe Energy credits to your creative balance.',
+      message: 'Added +1,000 ONᵉ Energy credits to your creative balance.',
     });
   };
 
@@ -108,7 +108,7 @@ export const Settings: React.FC = () => {
               <div className="space-y-1">
                 <span className="text-xs font-mono text-zinc-300">Creator Avatar</span>
                 <p className="text-[11px] text-muted">
-                  Synchronized with your ONe community showcase profile.
+                  Synchronized with your ONᵉ community showcase profile.
                 </p>
               </div>
             </div>
@@ -168,7 +168,7 @@ export const Settings: React.FC = () => {
                     }`}
                   >
                     <span className="w-3 h-3 rounded-full bg-brand-yellow" />
-                    <span>ONe Yellow</span>
+                    <span>ONᵉ Yellow</span>
                   </button>
 
                   <button
@@ -270,7 +270,7 @@ export const Settings: React.FC = () => {
             {/* API Token display */}
             <div className="pt-2 border-t border-[#1f1f1f] space-y-1.5">
               <label className="text-xs text-zinc-400 font-medium flex items-center justify-between">
-                <span>ONe API Token (Client Prototype)</span>
+                <span>ONᵉ API Token (Client Prototype)</span>
                 <button
                   type="button"
                   onClick={() => setShowApiToken(!showApiToken)}
@@ -311,7 +311,7 @@ export const Settings: React.FC = () => {
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono text-zinc-400 flex items-center gap-1.5">
                 <Zap className="w-4 h-4 text-brand-yellow" />
-                ONe Energy Balance
+                ONᵉ Energy Balance
               </span>
               <span className="text-sm font-bold text-brand-yellow font-mono">
                 {settings.energyCredits.toLocaleString()} ⚡
