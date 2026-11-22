@@ -83,6 +83,20 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
     }
   });
 
+  // Listen for external task anchors (e.g. from Daily Cadence Task module)
+  useEffect(() => {
+    const handleSpiderWebUpdate = (e: any) => {
+      try {
+        const saved = localStorage.getItem('one_spiderweb_user_topics');
+        if (saved) {
+          setCustomTopics(JSON.parse(saved));
+        }
+      } catch (err) {}
+    };
+    window.addEventListener('one_spiderweb_update', handleSpiderWebUpdate);
+    return () => window.removeEventListener('one_spiderweb_update', handleSpiderWebUpdate);
+  }, []);
+
   const avatarPresets = [
     'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
     'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80',

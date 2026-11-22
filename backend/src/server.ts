@@ -223,6 +223,71 @@ app.post('/api/jev/evaluate', async (req: Request, res: Response) => {
   }
 });
 
+// 9. Daily Task AI Morning Briefing API
+app.post('/api/daily-task/morning-briefing', async (req: Request, res: Response) => {
+  try {
+    const { tasks = [], date = new Date().toLocaleDateString() } = req.body;
+    const taskListStr = tasks.map((t: any, i: number) => `${i + 1}. [${t.priority || 'Normal'}] ${t.title} (${t.category || 'General'})`).join('\n');
+    const prompt = `Morning Focus Goals for ${date}:\n${taskListStr || 'Plan a high-impact daily routine'}`;
+    
+    const jevDecision = await evaluateWithJev(prompt);
+    const briefingPrompt = `You are the ONe Dual-Brain AI Assistant (Steami Cognitive Engine). Provide a concise, motivational Morning Mission Briefing based on the user's daily goals:
+${taskListStr}
+
+Include:
+1. "🎯 Tactical Priority": Which single task should be tackled first (Eat the Frog).
+2. "⚡ Energy Strategy": Recommended time-blocking and focus cadence.
+3. "🚀 Cognitive Affirmation": One punchy sentence to start the day.
+Keep it concise, stylish, and structured with clean markdown.`;
+
+    const inklingResult = await generateWithInkling(briefingPrompt, jevDecision);
+    return res.json({
+      success: true,
+      jevDecision,
+      briefing: inklingResult.content,
+      model: inklingResult.model,
+      executionTimeMs: jevDecision.latencyMs + inklingResult.executionTimeMs,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 10. Daily Task AI Evening Debrief API
+app.post('/api/daily-task/evening-debrief', async (req: Request, res: Response) => {
+  try {
+    const { completedTasks = [], pendingTasks = [], reflections = '', date = new Date().toLocaleDateString() } = req.body;
+    const total = completedTasks.length + pendingTasks.length;
+    const velocity = total > 0 ? Math.round((completedTasks.length / total) * 100) : 100;
+    const prompt = `Evening Debrief for ${date}: ${completedTasks.length}/${total} tasks completed. Reflections: ${reflections}`;
+
+    const jevDecision = await evaluateWithJev(prompt);
+    const debriefPrompt = `You are the ONe Dual-Brain AI Assistant. Provide a short, insightful Evening Standup Retrospective:
+- Tasks Completed (${completedTasks.length}): ${completedTasks.join(', ') || 'None logged'}
+- Pending/Rolled-over (${pendingTasks.length}): ${pendingTasks.join(', ') || 'None'}
+- User's Reflections: ${reflections || 'Consistent progress made.'}
+- Velocity Score: ${velocity}%
+
+Include:
+1. "🏆 Day's Wins & Impact": Acknowledge completed work.
+2. "🔍 Cognitive Diagnosis": Insight on pending items (how to adjust for tomorrow).
+3. "🔋 Evening Rest Cadence": A closing thought to disconnect and recharge.
+Keep it punchy, empathetic, and formatted in clean markdown.`;
+
+    const inklingResult = await generateWithInkling(debriefPrompt, jevDecision);
+    return res.json({
+      success: true,
+      jevDecision,
+      retrospective: inklingResult.content,
+      velocity,
+      energyAwarded: Math.min(300, 50 + completedTasks.length * 35),
+      executionTimeMs: jevDecision.latencyMs + inklingResult.executionTimeMs,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log('====================================================');
   console.log(`🚀 ONe AI Studio Backend running on http://localhost:${PORT}`);
