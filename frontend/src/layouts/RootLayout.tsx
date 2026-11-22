@@ -4,6 +4,7 @@ import { Sidebar } from '../components/common/Sidebar';
 import { Navbar } from '../components/common/Navbar';
 import { CommandPalette } from '../components/common/CommandPalette';
 import { ToastContainer } from '../components/common/ToastContainer';
+import { AuthModal } from '../components/common/AuthModal';
 import { GlobalAnimatedBackground } from '../components/common/GlobalAnimatedBackground';
 import { X } from 'lucide-react';
 
@@ -56,6 +57,7 @@ export const RootLayout: React.FC = () => {
       {/* Global Utilities */}
       <CommandPalette />
       <ToastContainer />
+      <AuthModal />
     </div>
   );
 };

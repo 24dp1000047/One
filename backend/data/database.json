@@ -4,7 +4,7 @@
       "id": "conv-2026-11-21",
       "title": "hi",
       "createdAt": "2026-11-21T15:02:27.732Z",
-      "updatedAt": "2026-11-21T15:03:21.839Z"
+      "updatedAt": "2026-11-21T16:29:16.044Z"
     },
     {
       "id": "conv-sample-1",
@@ -77,9 +77,39 @@
       "content": "Short answer: **contested / unresolved** — not proven true, not proven false. The “24% TRUE” figure should be read as a subjective probability under standard definitions, not a scientific measurement.\n\n- **What “aliens” means:** If it means confirmed non-human intelligence, the evidence is near zero; if it means any non-Earth life, the case is stronger because planets/moons broadly look life-compatible.\n- **Why not TRUE:** No unambiguous detection of extraterrestrial life or intelligence. Claims have not held under peer review or replication.\n- **Why not FALSE:** “No confirmed detection” is not proof of nonexistence. Silence can come from distance, numbers, detection limits, information delays, or technological differences—not from absence.\n- **Verdict rationale:** A 24%-ish estimate reflects substantial plausible uncertainty: biosignatures elsewhere seem likely, but “aliens exist” in the strong sense of sentient/technological visitors is unsupported. A TRUE band (~0.85) would need reproducible evidence; a FALSE band (~0.15) would need solid reason to rule out extraterrestrial life.\n- **Takeaway:** “Aliens exist” is open. The honest position is **uncertain but not established**, with weaker confidence in “life beyond Earth” and near-zero confidence in confirmed extraterrestrial civilization.",
       "model": "thinkingmachines/inkling-2-mini",
       "createdAt": "2026-11-21T15:03:21.839Z"
+    },
+    {
+      "id": "msg-u-1795278556044",
+      "conversationId": "conv-2026-11-21",
+      "role": "user",
+      "content": "{2tow} plsu+ 2(-3=>?",
+      "model": "user",
+      "createdAt": "2026-11-21T16:29:16.044Z"
+    },
+    {
+      "id": "msg-ai-1795278556045",
+      "conversationId": "conv-2026-11-21",
+      "role": "assistant",
+      "content": "",
+      "model": "Thinking Machines Inkling",
+      "createdAt": "2026-11-21T16:29:16.044Z"
     }
   ],
   "jevTelemetry": [
+    {
+      "id": "tel-1795278556044",
+      "messageId": "msg-ai-1795278556045",
+      "conversationId": "conv-2026-11-21",
+      "intent": "general_dialogue",
+      "complexity": "moderate",
+      "confidence": 0,
+      "reasoningBudget": "medium",
+      "latencyMs": 798,
+      "primitiveType": "classifier",
+      "truthScorePercent": null,
+      "verdict": null,
+      "createdAt": "2026-11-21T16:29:16.044Z"
+    },
     {
       "id": "tel-1795273401839",
       "messageId": "msg-ai-1795273401840",
@@ -135,6 +165,28 @@
       "truthScorePercent": 33,
       "verdict": "CONTESTED / AMBIGUOUS",
       "createdAt": "2026-11-21T12:40:06.038Z"
+    }
+  ],
+  "users": [
+    {
+      "id": "usr-demo-1",
+      "name": "Alex Vance",
+      "email": "alex@onestudio.ai",
+      "passwordHash": "e98f07a564c410a540e1d7ecb9a4e7db2c2ebe8195a173a71d5d31391b7bfc82",
+      "handle": "@alex_creator",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80",
+      "bio": "Visual director & digital artist crafting cinematic worlds with ONᵉ AI.",
+      "createdAt": "2026-11-21T12:00:00.000Z"
+    },
+    {
+      "id": "usr-1795359284745",
+      "name": "Test User",
+      "email": "testuser@onestudio.ai",
+      "passwordHash": "e98f07a564c410a540e1d7ecb9a4e7db2c2ebe8195a173a71d5d31391b7bfc82",
+      "handle": "@test_user",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80",
+      "bio": "AI Creative Explorer & Prompt Architect at ONᵉ Studio.",
+      "createdAt": "2026-11-22T14:54:44.746Z"
     }
   ]
 }

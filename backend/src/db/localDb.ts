@@ -1,8 +1,21 @@
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { JevDecision } from '../types';
 
+export interface UserRecord {
+  id: string;
+  name: string;
+  email: string;
+  passwordHash: string;
+  handle: string;
+  avatar: string;
+  bio?: string;
+  createdAt: string;
+}
+
 export interface LocalDbSchema {
+  users?: UserRecord[];
   conversations: {
     id: string;
     title: string;
@@ -36,6 +49,12 @@ export interface LocalDbSchema {
 const DATA_DIR = path.resolve(__dirname, '../../data');
 const DB_FILE = path.join(DATA_DIR, 'database.json');
 
+// Hash password with SHA-256 + salt
+export function hashPassword(password: string): string {
+  const salt = 'one_ai_studio_salt_9f830a';
+  return crypto.createHash('sha256').update(password + salt).digest('hex');
+}
+
 // Ensure data directory and database file exist
 function initDb(): LocalDbSchema {
   if (!fs.existsSync(DATA_DIR)) {
@@ -44,6 +63,18 @@ function initDb(): LocalDbSchema {
 
   if (!fs.existsSync(DB_FILE)) {
     const initialData: LocalDbSchema = {
+      users: [
+        {
+          id: 'usr-demo-1',
+          name: 'Alex Vance',
+          email: 'alex@onestudio.ai',
+          passwordHash: hashPassword('password123'),
+          handle: '@alex_creator',
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
+          bio: 'Visual director & digital artist crafting cinematic worlds with ONᵉ AI.',
+          createdAt: new Date().toISOString(),
+        },
+      ],
       conversations: [
         {
           id: 'conv-sample-1',
@@ -93,14 +124,84 @@ function initDb(): LocalDbSchema {
 
   try {
     const content = fs.readFileSync(DB_FILE, 'utf-8');
-    return JSON.parse(content);
+    const data = JSON.parse(content);
+    if (!data.users) data.users = [];
+    if (data.users.length === 0) {
+      data.users.push({
+        id: 'usr-demo-1',
+        name: 'Alex Vance',
+        email: 'alex@onestudio.ai',
+        passwordHash: hashPassword('password123'),
+        handle: '@alex_creator',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
+        bio: 'Visual director & digital artist crafting cinematic worlds with ONᵉ AI.',
+        createdAt: new Date().toISOString(),
+      });
+      writeLocalDb(data);
+    }
+    return data;
   } catch {
-    return { conversations: [], messages: [], jevTelemetry: [] };
+    return { users: [], conversations: [], messages: [], jevTelemetry: [] };
   }
 }
 
 export function readLocalDb(): LocalDbSchema {
   return initDb();
+}
+
+export function writeLocalDb(data: LocalDbSchema): boolean {
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    return true;
+  } catch (err: any) {
+    console.error('❌ [Local DB] Error writing:', err.message);
+    return false;
+  }
+}
+
+// User Auth Database Helpers
+export function findUserByEmail(email: string): UserRecord | undefined {
+  const db = readLocalDb();
+  const lower = email.trim().toLowerCase();
+  return (db.users || []).find((u) => u.email.toLowerCase() === lower);
+}
+
+export function findUserById(id: string): UserRecord | undefined {
+  const db = readLocalDb();
+  return (db.users || []).find((u) => u.id === id);
+}
+
+export function createUser(data: {
+  name: string;
+  email: string;
+  password: string;
+  handle?: string;
+  avatar?: string;
+  bio?: string;
+}): UserRecord {
+  const db = readLocalDb();
+  if (!db.users) db.users = [];
+
+  const defaultAvatar =
+    data.avatar ||
+    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80';
+  const defaultHandle =
+    data.handle || `@${data.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+
+  const newUser: UserRecord = {
+    id: 'usr-' + Date.now(),
+    name: data.name.trim(),
+    email: data.email.trim().toLowerCase(),
+    passwordHash: hashPassword(data.password),
+    handle: defaultHandle,
+    avatar: defaultAvatar,
+    bio: data.bio || 'AI Creative Explorer & Prompt Architect at ONᵉ Studio.',
+    createdAt: new Date().toISOString(),
+  };
+
+  db.users.push(newUser);
+  writeLocalDb(db);
+  return newUser;
 }
 
 export function saveToLocalDb(
@@ -164,11 +265,10 @@ export function saveToLocalDb(
       createdAt: new Date().toISOString(),
     });
 
-    // Keep DB file clean (cap records at 100)
     if (db.messages.length > 200) db.messages = db.messages.slice(-200);
     if (db.jevTelemetry.length > 100) db.jevTelemetry = db.jevTelemetry.slice(0, 100);
 
-    fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), 'utf-8');
+    writeLocalDb(db);
     console.log(`💾 [Local DB] Persisted interaction to ${DB_FILE}`);
     return true;
   } catch (err: any) {

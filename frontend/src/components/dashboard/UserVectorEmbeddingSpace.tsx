@@ -7,8 +7,6 @@ import {
   Brain,
   Sparkles,
   Zap,
-  CheckCircle2,
-  ShieldCheck,
   Layers,
   Edit3,
   Camera,
@@ -18,7 +16,11 @@ import {
   Sun,
   Moon,
   Target,
-  RefreshCw
+  Trash2,
+  Code,
+  Compass,
+  Palette,
+  MessageSquare
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { audioSynth } from '../../utils/audioSynth';
@@ -26,7 +28,7 @@ import { audioSynth } from '../../utils/audioSynth';
 export interface VectorNode {
   id: string;
   label: string;
-  category: 'metal' | 'rock' | 'folk' | 'prog' | 'code' | 'logic' | 'creative';
+  category: 'code' | 'logic' | 'creative' | 'concept';
   prompt?: string;
   x: number; // 3D coordinates
   y: number;
@@ -37,63 +39,104 @@ export interface VectorNode {
   isCustom?: boolean;
 }
 
-// Built-in reference nodes exactly matching the reference image
-const BASE_REFERENCE_NODES: VectorNode[] = [
-  // Thrash / Heavy Metal cluster (Left of vertical axis, near query)
-  { id: 'meta-1', label: 'Metallica', category: 'metal', x: -1.35, y: -0.30, z: 0.52 },
-  { id: 'meta-2', label: 'Slayer', category: 'metal', x: -1.48, y: -0.58, z: 0.65 },
-  { id: 'meta-3', label: 'Anthrax', category: 'metal', x: -1.18, y: -0.18, z: 0.72 },
-  { id: 'meta-4', label: 'Black Sabbath', category: 'metal', x: -1.75, y: 1.35, z: 0.22 },
-  { id: 'meta-5', label: 'Iron Maiden', category: 'metal', x: -2.05, y: 0.95, z: 0.28 },
-  { id: 'meta-6', label: 'Van Halen', category: 'metal', x: -1.65, y: 0.42, z: 0.38 },
+// 55 Persistent Ambient Green Dots distributed across 3D space (matching the volume in the reference image)
+const AMBIENT_GREEN_DOTS = [
+  // Left quadrant volume
+  { x: -1.75, y: 1.45, z: 0.25, size: 7.2 },
+  { x: -1.35, y: 1.62, z: 0.18, size: 5.4 },
+  { x: -1.15, y: 1.25, z: 0.35, size: 8.5 },
+  { x: -1.85, y: 0.85, z: 0.30, size: 6.0 },
+  { x: -1.55, y: 0.55, z: 0.42, size: 5.0 },
+  { x: -2.05, y: 0.30, z: 0.38, size: 6.8 },
+  { x: -1.25, y: 0.75, z: 0.45, size: 9.0 },
+  { x: -0.85, y: 1.15, z: 0.28, size: 6.2 },
+  { x: -0.65, y: 1.48, z: 0.15, size: 4.5 },
+  { x: -0.95, y: 0.45, z: 0.52, size: 5.5 },
+  { x: -1.65, y: 0.05, z: 0.55, size: 7.8 },
+  { x: -1.35, y: -0.15, z: 0.62, size: 6.5 },
+  { x: -1.85, y: -0.35, z: 0.58, size: 8.2 },
+  { x: -1.15, y: -0.45, z: 0.72, size: 5.2 },
+  { x: -0.75, y: -0.15, z: 0.65, size: 7.0 },
+  { x: -0.45, y: 0.25, z: 0.58, size: 4.8 },
+  { x: -0.55, y: 0.85, z: 0.35, size: 5.8 },
+  { x: -0.35, y: 1.35, z: 0.22, size: 6.0 },
 
-  // Left ambient red dots (unlabeled density from reference image)
-  { id: 'amb-l1', label: 'Megadeth', category: 'metal', x: -2.15, y: 0.20, z: 0.30 },
-  { id: 'amb-l2', label: 'Judas Priest', category: 'metal', x: -1.88, y: -0.05, z: 0.40 },
-  { id: 'amb-l3', label: 'Pantera', category: 'metal', x: -1.45, y: 0.85, z: 0.25 },
-  { id: 'amb-l4', label: 'Motörhead', category: 'metal', x: -1.25, y: 1.45, z: 0.18 },
-  { id: 'amb-l5', label: 'Deep Purple', category: 'rock', x: -0.85, y: 1.58, z: 0.12 },
-  { id: 'amb-l6', label: 'Led Zeppelin', category: 'rock', x: -0.92, y: 0.95, z: 0.32 },
-  { id: 'amb-l7', label: 'Ozzy Osbourne', category: 'metal', x: -1.55, y: -0.12, z: 0.55 },
-  { id: 'amb-l8', label: 'Dio', category: 'metal', x: -0.95, y: 0.48, z: 0.45 },
-  { id: 'amb-l9', label: 'Accept', category: 'metal', x: -0.72, y: -0.10, z: 0.68 },
-  { id: 'amb-l10', label: 'Testament', category: 'metal', x: -0.58, y: 0.72, z: 0.48 },
-  { id: 'amb-l11', label: 'Kreator', category: 'metal', x: -0.45, y: 1.15, z: 0.35 },
-  { id: 'amb-l12', label: 'Sepultura', category: 'metal', x: -0.38, y: 0.22, z: 0.60 },
+  // Right quadrant volume
+  { x: 0.35, y: 1.68, z: 0.40, size: 8.0 },
+  { x: 0.65, y: 1.42, z: 0.55, size: 6.2 },
+  { x: 0.95, y: 1.25, z: 0.62, size: 7.5 },
+  { x: 1.35, y: 1.55, z: 0.50, size: 8.8 },
+  { x: 1.65, y: 1.30, z: 0.65, size: 5.5 },
+  { x: 0.45, y: 0.95, z: 0.70, size: 6.0 },
+  { x: 0.85, y: 0.75, z: 0.82, size: 7.0 },
+  { x: 1.25, y: 0.95, z: 0.75, size: 6.5 },
+  { x: 1.55, y: 0.75, z: 0.92, size: 5.8 },
+  { x: 1.85, y: 0.55, z: 1.10, size: 6.2 },
+  { x: 0.25, y: 0.45, z: 0.85, size: 5.0 },
+  { x: 0.65, y: 0.25, z: 0.98, size: 8.2 },
+  { x: 1.05, y: 0.35, z: 1.15, size: 6.8 },
+  { x: 1.45, y: 0.15, z: 1.35, size: 7.5 },
+  { x: 1.75, y: -0.15, z: 1.55, size: 8.5 },
+  { x: 0.55, y: -0.25, z: 1.18, size: 6.2 },
+  { x: 0.85, y: -0.45, z: 1.35, size: 7.0 },
+  { x: 1.25, y: -0.35, z: 1.50, size: 5.8 },
+  { x: 1.55, y: -0.65, z: 1.75, size: 6.5 },
 
-  // Classic / Folk / Prog Rock cluster (Right of vertical axis)
-  { id: 'meta-7', label: 'Peter, Paul & Mary', category: 'folk', x: 0.42, y: 1.62, z: 0.45 },
-  { id: 'meta-8', label: 'Bob Dylan', category: 'folk', x: 0.82, y: 1.30, z: 0.58 },
-  { id: 'meta-9', label: 'Genesis', category: 'prog', x: 0.88, y: -0.22, z: 1.15 },
-  { id: 'meta-10', label: 'Psychedelic Furs', category: 'rock', x: 0.48, y: -0.45, z: 1.25 },
-  { id: 'meta-11', label: 'Grateful Dead', category: 'rock', x: 1.38, y: -0.28, z: 1.55 },
-  { id: 'meta-12', label: 'Phish', category: 'rock', x: 1.78, y: 0.08, z: 1.72 },
-
-  // Right ambient red dots (unlabeled density from reference image)
-  { id: 'amb-r1', label: 'The Byrds', category: 'folk', x: 0.32, y: 1.10, z: 0.65 },
-  { id: 'amb-r2', label: 'Simon & Garfunkel', category: 'folk', x: 0.65, y: 0.88, z: 0.75 },
-  { id: 'amb-r3', label: 'Joan Baez', category: 'folk', x: 0.25, y: 0.62, z: 0.85 },
-  { id: 'amb-r4', label: 'Joni Mitchell', category: 'folk', x: 1.05, y: 1.05, z: 0.82 },
-  { id: 'amb-r5', label: 'Crosby, Stills & Nash', category: 'folk', x: 1.45, y: 0.98, z: 0.92 },
-  { id: 'amb-r6', label: 'Neil Young', category: 'folk', x: 1.62, y: 0.82, z: 1.10 },
-  { id: 'amb-r7', label: 'Pink Floyd', category: 'prog', x: 1.18, y: 0.45, z: 1.20 },
-  { id: 'amb-r8', label: 'Yes', category: 'prog', x: 1.42, y: 0.15, z: 1.42 },
-  { id: 'amb-r9', label: 'King Crimson', category: 'prog', x: 0.92, y: 0.18, z: 1.30 },
-  { id: 'amb-r10', label: 'Rush', category: 'prog', x: 0.68, y: 0.05, z: 1.18 },
-  { id: 'amb-r11', label: 'The Doors', category: 'rock', x: 0.15, y: -0.15, z: 1.05 },
-  { id: 'amb-r12', label: 'The Velvet Underground', category: 'rock', x: 1.45, y: -0.72, z: 1.85 },
-
-  // Floor plane cluster (Rhombus ground plane)
-  { id: 'meta-13', label: 'Dire Straits', category: 'rock', x: -0.38, y: -0.92, z: 1.48 },
-  { id: 'meta-14', label: 'Eagles', category: 'rock', x: 0.25, y: -0.92, z: 2.05 },
-
-  // Floor ambient red dots (unlabeled density from reference image)
-  { id: 'amb-f1', label: 'Fleetwood Mac', category: 'rock', x: -1.25, y: -0.92, z: 0.75 },
-  { id: 'amb-f2', label: 'Tom Petty', category: 'rock', x: -0.85, y: -0.92, z: 1.10 },
-  { id: 'amb-f3', label: 'Bruce Springsteen', category: 'rock', x: -1.65, y: -0.92, z: 1.25 },
-  { id: 'amb-f4', label: 'Steely Dan', category: 'rock', x: -0.15, y: -0.92, z: 2.35 },
-  { id: 'amb-f5', label: 'Doobie Brothers', category: 'rock', x: -0.75, y: -0.92, z: 1.95 },
+  // Floor plane volume (Rhombus base)
+  { x: -1.65, y: -0.92, z: 0.65, size: 6.0 },
+  { x: -1.25, y: -0.92, z: 0.95, size: 5.2 },
+  { x: -0.85, y: -0.92, z: 1.15, size: 7.5 },
+  { x: -0.45, y: -0.92, z: 1.35, size: 8.2 },
+  { x: -0.15, y: -0.92, z: 1.65, size: 6.5 },
+  { x: 0.25, y: -0.92, z: 1.95, size: 7.0 },
+  { x: -1.85, y: -0.92, z: 1.10, size: 5.5 },
+  { x: -1.45, y: -0.92, z: 1.45, size: 6.8 },
+  { x: -1.05, y: -0.92, z: 1.75, size: 8.0 },
+  { x: -0.65, y: -0.92, z: 2.05, size: 5.4 },
+  { x: -0.25, y: -0.92, z: 2.30, size: 6.2 },
+  { x: -2.15, y: -0.92, z: 1.55, size: 5.0 },
+  { x: -1.75, y: -0.92, z: 1.95, size: 6.5 },
+  { x: -1.35, y: -0.92, z: 2.25, size: 7.2 },
+  { x: -0.75, y: -0.92, z: 0.55, size: 6.0 },
+  { x: 0.05, y: -0.92, z: 0.95, size: 5.5 },
 ];
+
+// Deterministic 3D positioning for real user queries
+const getVectorCoordinates = (text: string, index: number) => {
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) {
+    hash = (hash << 5) - hash + text.charCodeAt(i);
+    hash |= 0;
+  }
+  hash = Math.abs(hash) + index * 41;
+
+  const quadrant = index % 3; // 0 = Left region, 1 = Right region, 2 = Floor region
+  const u = 0.2 + ((hash % 100) / 100) * 0.65;
+  const v = 0.2 + (((hash >> 2) % 100) / 100) * 0.65;
+
+  if (quadrant === 0) {
+    // Left quadrant
+    return {
+      x: -0.6 - u * 1.5,
+      y: -0.5 + v * 2.0,
+      z: 0.25 + ((hash % 50) / 50) * 1.3,
+    };
+  } else if (quadrant === 1) {
+    // Right quadrant
+    return {
+      x: 0.4 + u * 1.4,
+      y: -0.5 + v * 2.0,
+      z: 0.4 + ((hash % 50) / 50) * 1.4,
+    };
+  } else {
+    // Floor plane
+    return {
+      x: -1.9 + u * 2.1,
+      y: -0.92,
+      z: 0.5 + v * 1.6,
+    };
+  }
+};
 
 export const UserVectorEmbeddingSpace: React.FC = () => {
   const navigate = useNavigate();
@@ -103,21 +146,10 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
   const settings = useAppStore((state) => state.settings);
   const conversations = useAppStore((state) => state.conversations);
   const setActiveConversationId = useAppStore((state) => state.setActiveConversationId);
-  const updateSettings = useAppStore((state) => state.updateSettings);
   const addToast = useAppStore((state) => state.addToast);
   const createConversation = useAppStore((state) => state.createConversation);
 
-  // User profile modal states
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [profileName, setProfileName] = useState(settings.name);
-  const [profileHandle, setProfileHandle] = useState(settings.handle);
-  const [profileBio, setProfileBio] = useState(settings.bio || '');
-  const [profileAvatar, setProfileAvatar] = useState(settings.avatar);
-  const [fastPassEnabled, setFastPassEnabled] = useState(true);
-  const [showVerifiedModal, setShowVerifiedModal] = useState(false);
-  const [energyBonusAnimation, setEnergyBonusAnimation] = useState(false);
-
-  // Custom user queries added dynamically
+  // Custom user queries added dynamically by user (persisted in localStorage)
   const [customUserNodes, setCustomUserNodes] = useState<VectorNode[]>(() => {
     try {
       const saved = localStorage.getItem('one_custom_vector_nodes');
@@ -127,16 +159,77 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
     }
   });
 
-  // Active Query: exactly matching the reference image's QUERY: "thrash rock"
-  const [activeQuery, setActiveQuery] = useState<string>('thrash rock');
-  const [queryInput, setQueryInput] = useState<string>('');
-  const [queryPoint, setQueryPoint] = useState<{ x: number; y: number; z: number }>({
-    x: -1.35,
-    y: -0.38,
-    z: 0.60,
+  // Combine real user conversation queries + user custom added queries (ZERO DUMMY DATA!)
+  const allNodes: VectorNode[] = useMemo(() => {
+    const list: VectorNode[] = [];
+
+    // 1. Custom user-added topics
+    customUserNodes.forEach((cn) => {
+      if (!list.some((n) => n.id === cn.id || n.label.toLowerCase() === cn.label.toLowerCase())) {
+        list.push(cn);
+      }
+    });
+
+    // 2. Real user queries from AI conversations
+    conversations.forEach((conv, cIdx) => {
+      const userQueries = conv.messages.filter((m) => m.role === 'user').map((m) => m.content);
+      const allQueries = userQueries.length > 0 ? userQueries : [conv.title];
+
+      allQueries.forEach((qText, qIdx) => {
+        const clean = qText.trim();
+        if (!clean || list.some((n) => n.label.toLowerCase() === clean.toLowerCase())) return;
+
+        const lower = clean.toLowerCase();
+        let category: VectorNode['category'] = 'concept';
+        if (/code|typescript|javascript|react|css|html|function|api|algorithm|database|docker|backend|class/i.test(lower)) {
+          category = 'code';
+        } else if (/why|what|is|how|explain|truth|taxonomy|logic|math|vs|system|noul/i.test(lower)) {
+          category = 'logic';
+        } else if (/art|cinematic|render|cyberpunk|image|prompt|style|music|video|visual|photo/i.test(lower)) {
+          category = 'creative';
+        }
+
+        const coords = getVectorCoordinates(clean, list.length);
+
+        list.push({
+          id: `conv-${conv.id}-${qIdx}`,
+          label: clean.slice(0, 24),
+          category,
+          prompt: clean,
+          x: coords.x,
+          y: coords.y,
+          z: coords.z,
+          conversationId: conv.id,
+          isCustom: false,
+        });
+      });
+    });
+
+    return list;
+  }, [conversations, customUserNodes]);
+
+  // Active Query: strictly reflects real user searches
+  const [activeQuery, setActiveQuery] = useState<string>(() => {
+    if (allNodes.length > 0) return allNodes[0].label;
+    return '';
   });
 
-  // Visual Theme: 'light' matches the pure white canvas from reference image
+  const [queryInput, setQueryInput] = useState<string>('');
+  const [queryPoint, setQueryPoint] = useState<{ x: number; y: number; z: number }>(() => {
+    if (allNodes.length > 0) {
+      return { x: allNodes[0].x, y: allNodes[0].y, z: allNodes[0].z };
+    }
+    return { x: -1.35, y: -0.38, z: 0.60 };
+  });
+
+  useEffect(() => {
+    if (allNodes.length > 0 && !activeQuery) {
+      setActiveQuery(allNodes[0].label);
+      setQueryPoint({ x: allNodes[0].x, y: allNodes[0].y, z: allNodes[0].z });
+    }
+  }, [allNodes, activeQuery]);
+
+  // Visual Theme: 'light' matches the pure white background from the reference image
   const [canvasTheme, setCanvasTheme] = useState<'light' | 'dark'>('light');
 
   // Camera Orbit Orientation (exact isometric viewing angle matching reference image)
@@ -149,54 +242,7 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
   const [hoveredNode, setHoveredNode] = useState<VectorNode | null>(null);
   const [selectedNode, setSelectedNode] = useState<VectorNode | null>(null);
 
-  // Combine reference nodes + user conversation queries + custom user nodes
-  const allNodes = useMemo(() => {
-    const list: VectorNode[] = [...BASE_REFERENCE_NODES];
-
-    // Merge custom added nodes
-    customUserNodes.forEach((cn) => {
-      if (!list.some((n) => n.id === cn.id || n.label.toLowerCase() === cn.label.toLowerCase())) {
-        list.push(cn);
-      }
-    });
-
-    // Merge real user queries from AI conversations
-    conversations.forEach((conv, cIdx) => {
-      const queries = conv.messages.filter((m) => m.role === 'user').map((m) => m.content);
-      queries.forEach((qText, qIdx) => {
-        const clean = qText.trim();
-        if (!clean || list.some((n) => n.label.toLowerCase() === clean.toLowerCase())) return;
-
-        let hash = 0;
-        for (let i = 0; i < clean.length; i++) {
-          hash = (hash << 5) - hash + clean.charCodeAt(i);
-          hash |= 0;
-        }
-        hash = Math.abs(hash) + cIdx * 19 + qIdx * 37;
-
-        // Spread nicely in 3D
-        const angle = (hash % 360) * (Math.PI / 180);
-        const radius = 0.8 + ((hash % 100) / 100) * 1.4;
-        const yVal = -0.6 + (((hash >> 2) % 100) / 100) * 1.8;
-
-        list.push({
-          id: `conv-${conv.id}-${qIdx}`,
-          label: clean.slice(0, 22),
-          category: 'code',
-          prompt: clean,
-          x: Math.cos(angle) * radius,
-          y: yVal,
-          z: Math.sin(angle) * radius,
-          conversationId: conv.id,
-          isCustom: true,
-        });
-      });
-    });
-
-    return list;
-  }, [conversations, customUserNodes]);
-
-  // Compute Euclidean 3D distance from each node to current query point
+  // Compute Euclidean 3D distance from each user node to current query point
   const nodesWithDistance = useMemo(() => {
     return allNodes.map((node) => {
       const dist = Math.hypot(node.x - queryPoint.x, node.y - queryPoint.y, node.z - queryPoint.z);
@@ -208,7 +254,7 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
     });
   }, [allNodes, queryPoint]);
 
-  // Mouse handlers for 3D Orbit Dragging
+  // Mouse drag handlers for 3D Orbit
   const handleMouseDown = (e: React.MouseEvent) => {
     isDraggingRef.current = true;
     lastMouseRef.current = { x: e.clientX, y: e.clientY };
@@ -229,11 +275,23 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
     isDraggingRef.current = false;
   };
 
-  // Reset 3D view to exact reference image orientation
   const handleResetCamera = () => {
     rotationRef.current = { rotX: 0.28, rotY: -0.785 };
     setZoomLevel(1.0);
     audioSynth.playClick(1200);
+  };
+
+  const handleClearCustomVectors = () => {
+    if (window.confirm('Clear your custom added vector points?')) {
+      audioSynth.playClick(800);
+      setCustomUserNodes([]);
+      localStorage.removeItem('one_custom_vector_nodes');
+      addToast({
+        type: 'info',
+        title: 'Vectors Cleared',
+        message: 'Custom query points reset.',
+      });
+    }
   };
 
   // 3D Canvas Projection & Rendering
@@ -269,7 +327,6 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
       const cameraDist = 3.4;
       const scale = (370 / (cameraDist + z2)) * zoomLevel;
 
-      // Origin vertex positioned matching reference image (bottom-center)
       const originScreenX = width / 2;
       const originScreenY = height * 0.70;
 
@@ -298,8 +355,7 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
       ctx.fillRect(0, 0, width, height);
 
       // ----------------------------------------------------
-      // 2. 3D RHOMBUS FLOOR PLANE
-      // Bounded by origin (0,0,0), bottom-left axis, foreground corner, and bottom-right axis
+      // 2. 3D RHOMBUS FLOOR PLANE (Light Mint Green Shaded)
       // ----------------------------------------------------
       const axisLen = 2.4;
       const pOrigin = project3D(0, 0, 0, rotX, rotY);
@@ -315,33 +371,29 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
       ctx.lineTo(pRightAxis.screenX, pRightAxis.screenY);
       ctx.closePath();
 
-      // Soft light-blue shaded plane fill
-      ctx.fillStyle = isLight ? 'rgba(235, 243, 254, 0.95)' : 'rgba(23, 37, 60, 0.65)';
+      // Soft light mint green plane fill matching reference image
+      ctx.fillStyle = isLight ? 'rgba(220, 252, 231, 0.85)' : 'rgba(20, 48, 30, 0.60)';
       ctx.fill();
 
-      // Subtle floor perimeter lines
-      ctx.strokeStyle = isLight ? 'rgba(190, 214, 248, 0.70)' : 'rgba(59, 130, 246, 0.25)';
+      // Floor border
+      ctx.strokeStyle = isLight ? 'rgba(134, 239, 172, 0.70)' : 'rgba(34, 197, 94, 0.25)';
       ctx.lineWidth = 1.2;
       ctx.stroke();
 
       // ----------------------------------------------------
-      // 3. THE 3 SOLID BLUE ARROW AXES (Exact match to reference image!)
-      // - Vertical UP arrow
-      // - Bottom-Left arrow
-      // - Bottom-Right arrow
+      // 3. 3 COORDINATE AXES WITH ARROWS (Dark Navy/Slate meeting at center)
       // ----------------------------------------------------
-      const drawBlueArrow = (from: typeof pOrigin, to: typeof pOrigin) => {
+      const drawSlateArrow = (from: typeof pOrigin, to: typeof pOrigin) => {
         ctx.beginPath();
         ctx.moveTo(from.screenX, from.screenY);
         ctx.lineTo(to.screenX, to.screenY);
-        ctx.strokeStyle = '#3B82F6'; // Royal Sky Blue matching reference
-        ctx.lineWidth = 2.8;
-        ctx.lineCap = 'round';
+        ctx.strokeStyle = isLight ? '#334155' : '#94A3B8';
+        ctx.lineWidth = 2.0;
         ctx.stroke();
 
-        // Solid triangular arrowhead at the end
+        // Arrowhead
         const angle = Math.atan2(to.screenY - from.screenY, to.screenX - from.screenX);
-        const headLen = 13;
+        const headLen = 11;
         ctx.beginPath();
         ctx.moveTo(to.screenX, to.screenY);
         ctx.lineTo(
@@ -353,79 +405,84 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
           to.screenY - headLen * Math.sin(angle + Math.PI / 6)
         );
         ctx.closePath();
-        ctx.fillStyle = '#3B82F6';
+        ctx.fillStyle = isLight ? '#334155' : '#94A3B8';
         ctx.fill();
       };
 
-      // Draw all 3 coordinate axes
-      drawBlueArrow(pOrigin, pTopAxis); // Vertical Up
-      drawBlueArrow(pOrigin, pLeftAxis); // Bottom Left
-      drawBlueArrow(pOrigin, pRightAxis); // Bottom Right
+      drawSlateArrow(pOrigin, pTopAxis); // Vertical Up
+      drawSlateArrow(pOrigin, pLeftAxis); // Bottom Left
+      drawSlateArrow(pOrigin, pRightAxis); // Bottom Right
 
       // ----------------------------------------------------
-      // 4. CONCENTRIC GREEN RADAR SIMILARITY RINGS (QUERY TARGET!)
-      // Exact match to the reference image: QUERY: "thrash rock"
+      // 4. AMBIENT GREEN DOTS FIELD ("keep the grren dots")
       // ----------------------------------------------------
-      const pQuery = project3D(queryPoint.x, queryPoint.y, queryPoint.z, rotX, rotY);
+      AMBIENT_GREEN_DOTS.forEach((pt) => {
+        const p = project3D(pt.x, pt.y, pt.z, rotX, rotY);
+        const r = pt.size * (p.scale / 120);
 
-      // Subtle breathing pulse for radar effect
-      const pulse = Math.sin(time * 0.003) * 2.5;
-      const rOuter = 64 + pulse;
-      const rMid = 44 + pulse * 0.7;
-      const rInner = 25 + pulse * 0.4;
+        ctx.beginPath();
+        ctx.arc(p.screenX, p.screenY, r, 0, Math.PI * 2);
+        ctx.fillStyle = '#22C55E'; // Vibrant emerald / lime green matching image
+        ctx.fill();
 
-      // Outer green ring
-      ctx.beginPath();
-      ctx.arc(pQuery.screenX, pQuery.screenY, rOuter, 0, Math.PI * 2);
-      ctx.fillStyle = isLight ? 'rgba(165, 214, 167, 0.28)' : 'rgba(76, 175, 80, 0.18)';
-      ctx.fill();
-
-      // Middle green ring
-      ctx.beginPath();
-      ctx.arc(pQuery.screenX, pQuery.screenY, rMid, 0, Math.PI * 2);
-      ctx.fillStyle = isLight ? 'rgba(165, 214, 167, 0.42)' : 'rgba(76, 175, 80, 0.30)';
-      ctx.fill();
-
-      // Inner green ring
-      ctx.beginPath();
-      ctx.arc(pQuery.screenX, pQuery.screenY, rInner, 0, Math.PI * 2);
-      ctx.fillStyle = isLight ? 'rgba(165, 214, 167, 0.58)' : 'rgba(76, 175, 80, 0.45)';
-      ctx.fill();
-
-      // Central dark green query anchor dot
-      ctx.beginPath();
-      ctx.arc(pQuery.screenX, pQuery.screenY, 5.5, 0, Math.PI * 2);
-      ctx.fillStyle = '#225426';
-      ctx.fill();
-      ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
-
-      // Leader line connecting query dot to its label: QUERY: "<query>"
-      const queryLabelX = pQuery.screenX + 42;
-      const queryLabelY = pQuery.screenY + 12;
-
-      ctx.beginPath();
-      ctx.moveTo(pQuery.screenX, pQuery.screenY);
-      ctx.lineTo(queryLabelX - 6, queryLabelY);
-      ctx.strokeStyle = '#225426';
-      ctx.lineWidth = 1.4;
-      ctx.stroke();
-
-      // QUERY label text
-      ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-      ctx.fillStyle = '#225426';
-      ctx.textAlign = 'left';
-      ctx.fillText('QUERY:', queryLabelX, queryLabelY - 2);
-
-      ctx.font = 'italic 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-      ctx.fillStyle = '#225426';
-      ctx.fillText(`"${activeQuery}"`, queryLabelX, queryLabelY + 12);
+        // 3D Specular shine on top-left
+        ctx.beginPath();
+        ctx.arc(p.screenX - r * 0.3, p.screenY - r * 0.3, r * 0.3, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+        ctx.fill();
+      });
 
       // ----------------------------------------------------
-      // 5. 3D VIBRANT RED VECTOR SPHERES & HORIZONTAL LEADER LINES
+      // 5. QUERY RADAR CONCENTRIC GREEN RINGS (Active Query Target)
       // ----------------------------------------------------
-      const projectedNodes = nodesWithDistance.map((node) => {
+      // 5. QUERY RADAR (Only displayed when real user queries exist!)
+      // ----------------------------------------------------
+      const currentQuery = activeQuery || (allNodes.length > 0 ? allNodes[0].label : '');
+      if (currentQuery && allNodes.length > 0) {
+        const pQuery = project3D(queryPoint.x, queryPoint.y, queryPoint.z, rotX, rotY);
+
+        const pulse = Math.sin(time * 0.003) * 2.5;
+        const rOuter = 62 + pulse;
+        const rMid = 42 + pulse * 0.7;
+        const rInner = 24 + pulse * 0.4;
+
+        // Concentric green circles
+        ctx.beginPath();
+        ctx.arc(pQuery.screenX, pQuery.screenY, rOuter, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(74, 222, 128, 0.18)';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(pQuery.screenX, pQuery.screenY, rMid, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(74, 222, 128, 0.30)';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(pQuery.screenX, pQuery.screenY, rInner, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(74, 222, 128, 0.48)';
+        ctx.fill();
+
+        // Center query dot
+        ctx.beginPath();
+        ctx.arc(pQuery.screenX, pQuery.screenY, 5.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#15803D';
+        ctx.fill();
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        // Query label below radar
+        ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillStyle = '#166534';
+        ctx.textAlign = 'center';
+        ctx.fillText(`Query: "${currentQuery}"`, pQuery.screenX, pQuery.screenY + rOuter + 14);
+        ctx.textAlign = 'left';
+      }
+
+      // ----------------------------------------------------
+      // 6. REAL USER QUERY VECTOR NODES (Primary Interactive Green Spheres)
+      // ----------------------------------------------------
+      const projectedUserNodes = nodesWithDistance.map((node) => {
         const proj = project3D(node.x, node.y, node.z, rotX, rotY);
         return {
           node,
@@ -435,107 +492,233 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
       });
 
       // Sort back-to-front
-      projectedNodes.sort((a, b) => b.depth - a.depth);
+      projectedUserNodes.sort((a, b) => b.depth - a.depth);
 
-      // Render red dots
-      projectedNodes.forEach(({ node, proj }) => {
+      projectedUserNodes.forEach(({ node, proj }) => {
         const isHovered = hoveredNode?.id === node.id;
         const isSelected = selectedNode?.id === node.id;
-        const isNearQuery = (node.distanceToQuery || 99) < 0.65;
-
-        const dotR = (isHovered || isSelected ? 8.5 : 7.0) * (proj.scale / 120);
+        const dotR = (isHovered || isSelected ? 10.5 : 8.5) * (proj.scale / 120);
 
         // Hover aura
         if (isHovered || isSelected) {
           ctx.beginPath();
           ctx.arc(proj.screenX, proj.screenY, dotR * 2.2, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(217, 37, 37, 0.25)';
+          ctx.fillStyle = 'rgba(34, 197, 94, 0.35)';
           ctx.fill();
         }
 
-        // Vibrant Red Sphere
+        // Vibrant Green Circle
         ctx.beginPath();
         ctx.arc(proj.screenX, proj.screenY, dotR, 0, Math.PI * 2);
-        ctx.fillStyle = '#D92525'; // Vibrant crimson red matching reference
+        ctx.fillStyle = isHovered || isSelected ? '#16A34A' : '#22C55E';
         ctx.fill();
 
-        // 3D Specular highlight on top-left of circle
+        // 3D Specular highlight
         ctx.beginPath();
-        ctx.arc(proj.screenX - dotR * 0.32, proj.screenY - dotR * 0.32, dotR * 0.28, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+        ctx.arc(proj.screenX - dotR * 0.32, proj.screenY - dotR * 0.32, dotR * 0.30, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
         ctx.fill();
 
-        // Subtle dark rim outline
-        ctx.strokeStyle = '#8B0000';
-        ctx.lineWidth = 0.8;
+        // Thin dark outline
+        ctx.strokeStyle = '#14532D';
+        ctx.lineWidth = 1.0;
         ctx.stroke();
       });
 
       // ----------------------------------------------------
-      // 6. HORIZONTAL LEADER LINES AND LABELS (Exact match to reference image!)
-      // Specifically labeled nodes in the reference image:
-      // Left: Black Sabbath, Iron Maiden, Van Halen, Metallica, Slayer, Anthrax
-      // Right: Peter, Paul & Mary, Bob Dylan, Genesis, Psychedelic Furs, Grateful Dead, Phish
-      // Floor: Dire Straits, Eagles
-      // Plus any user-custom nodes or hovered/selected node
+      // 7. CIRCULAR BUBBLE BADGES (STRICTLY FOR REAL USER SEARCHES!)
       // ----------------------------------------------------
-      const explicitlyLabeledIds = new Set([
-        'meta-1', // Metallica
-        'meta-2', // Slayer
-        'meta-3', // Anthrax
-        'meta-4', // Black Sabbath
-        'meta-5', // Iron Maiden
-        'meta-6', // Van Halen
-        'meta-7', // Peter, Paul & Mary
-        'meta-8', // Bob Dylan
-        'meta-9', // Genesis
-        'meta-10', // Psychedelic Furs
-        'meta-11', // Grateful Dead
-        'meta-12', // Phish
-        'meta-13', // Dire Straits
-        'meta-14', // Eagles
-      ]);
-
-      projectedNodes.forEach(({ node, proj }) => {
-        const isHovered = hoveredNode?.id === node.id;
-        const isSelected = selectedNode?.id === node.id;
-        const shouldLabel =
-          explicitlyLabeledIds.has(node.id) ||
-          node.isCustom ||
-          isHovered ||
-          isSelected;
-
-        if (!shouldLabel) return;
-
-        const isLeft = proj.screenX < width / 2;
-        const lineLen = 32;
-        const lineEndX = isLeft ? proj.screenX - lineLen : proj.screenX + lineLen;
-        const lineEndY = proj.screenY;
-
-        // Clean thin horizontal leader line
+      const drawCircularBadge = (
+        targetX: number,
+        targetY: number,
+        badgeX: number,
+        badgeY: number,
+        badgeR: number,
+        category: VectorNode['category'],
+        label: string
+      ) => {
+        ctx.save();
+        ctx.setLineDash([3, 3]);
         ctx.beginPath();
-        ctx.moveTo(proj.screenX, proj.screenY);
-        ctx.lineTo(lineEndX, lineEndY);
-        ctx.strokeStyle = isHovered || isSelected ? '#1E293B' : (isLight ? '#333333' : '#94A3B8');
-        ctx.lineWidth = isHovered || isSelected ? 1.6 : 1.1;
+        ctx.moveTo(targetX, targetY);
+        ctx.lineTo(badgeX, badgeY);
+        ctx.strokeStyle = '#64748B';
+        ctx.lineWidth = 1.3;
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.12)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetY = 3;
+
+        ctx.beginPath();
+        ctx.arc(badgeX, badgeY, badgeR, 0, Math.PI * 2);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.restore();
+
+        ctx.beginPath();
+        ctx.arc(badgeX, badgeY, badgeR, 0, Math.PI * 2);
+        ctx.strokeStyle = '#22C55E';
+        ctx.lineWidth = 2.4;
         ctx.stroke();
 
-        // Small origin anchor dot at leader line end
+        ctx.save();
+        ctx.translate(badgeX, badgeY);
+        ctx.fillStyle = '#0F172A';
+
+        if (category === 'code') {
+          ctx.font = 'bold 15px monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('</>', 0, 1);
+        } else if (category === 'creative') {
+          ctx.beginPath();
+          ctx.arc(0, 2, badgeR * 0.38, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(0, -badgeR * 0.42, 3, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (category === 'logic') {
+          ctx.beginPath();
+          ctx.arc(0, 0, badgeR * 0.40, 0, Math.PI * 2);
+          ctx.lineWidth = 2.8;
+          ctx.strokeStyle = '#0F172A';
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(-badgeR * 0.22, 0);
+          ctx.lineTo(badgeR * 0.22, 0);
+          ctx.stroke();
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 0, badgeR * 0.40, 0.2 * Math.PI, 1.8 * Math.PI, false);
+          ctx.lineWidth = 3.2;
+          ctx.strokeStyle = '#0F172A';
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(badgeR * 0.40, 0);
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        if (label) {
+          ctx.font = 'bold 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+          ctx.fillStyle = isLight ? '#0F172A' : '#F1F5F9';
+          ctx.textAlign = 'center';
+          ctx.fillText(label, badgeX, badgeY + badgeR + 13);
+          ctx.textAlign = 'left';
+        }
+      };
+
+      // Only render bubble badges if the user has real searched nodes
+      if (projectedUserNodes.length > 0) {
+        const leftNode = projectedUserNodes.find((n) => n.proj.screenX < width * 0.45) || projectedUserNodes[0];
+        if (leftNode) {
+          drawCircularBadge(
+            leftNode.proj.screenX,
+            leftNode.proj.screenY,
+            Math.max(55, leftNode.proj.screenX - 70),
+            Math.max(55, leftNode.proj.screenY - 65),
+            30,
+            leftNode.node.category,
+            leftNode.node.label
+          );
+        }
+
+        const rightNode = projectedUserNodes.find((n) => n.proj.screenX >= width * 0.55);
+        if (rightNode) {
+          drawCircularBadge(
+            rightNode.proj.screenX,
+            rightNode.proj.screenY,
+            Math.min(width - 55, rightNode.proj.screenX + 70),
+            Math.max(65, rightNode.proj.screenY - 50),
+            28,
+            rightNode.node.category,
+            rightNode.node.label
+          );
+        }
+
+        if (selectedNode) {
+          const selProj = project3D(selectedNode.x, selectedNode.y, selectedNode.z, rotX, rotY);
+          drawCircularBadge(
+            selProj.screenX,
+            selProj.screenY,
+            selProj.screenX + (selProj.screenX < width / 2 ? 65 : -65),
+            selProj.screenY - 60,
+            32,
+            selectedNode.category,
+            selectedNode.label
+          );
+        }
+      }
+
+      // ----------------------------------------------------
+      // 8. REAL USER SEARCH VECTOR CALLOUT (STRICTLY REAL USER DATA!)
+      // Displays the coordinates and search query the user actually searched!
+      // ----------------------------------------------------
+      const activeCalloutNode = selectedNode || (projectedUserNodes.length > 0 ? projectedUserNodes[0].node : null);
+      if (activeCalloutNode) {
+        const calloutProj = project3D(activeCalloutNode.x, activeCalloutNode.y, activeCalloutNode.z, rotX, rotY);
+        const tagX = Math.min(width - 30, Math.max(160, calloutProj.screenX + 80));
+        const tagY = Math.max(35, calloutProj.screenY - 45);
+
+        ctx.save();
+        ctx.setLineDash([3, 3]);
         ctx.beginPath();
-        ctx.arc(lineEndX, lineEndY, 1.8, 0, Math.PI * 2);
-        ctx.fillStyle = isLight ? '#333333' : '#CBD5E1';
-        ctx.fill();
+        ctx.moveTo(calloutProj.screenX, calloutProj.screenY);
+        ctx.lineTo(tagX - 10, tagY + 10);
+        ctx.strokeStyle = '#22C55E';
+        ctx.lineWidth = 1.3;
+        ctx.stroke();
+        ctx.restore();
+
+        // Real coordinates
+        ctx.font = 'bold 11px JetBrains Mono, monospace';
+        ctx.fillStyle = isLight ? '#0F172A' : '#F1F5F9';
+        ctx.textAlign = 'right';
+        ctx.fillText(`[${activeCalloutNode.x.toFixed(2)}, ${activeCalloutNode.y.toFixed(2)}, ${activeCalloutNode.z.toFixed(2)}]`, tagX + 50, tagY);
+
+        // Real user query text
+        ctx.font = 'bold 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillStyle = '#15803D';
+        const displayLabel = activeCalloutNode.label.length > 28 ? activeCalloutNode.label.slice(0, 28) + '...' : activeCalloutNode.label;
+        ctx.fillText(`"${displayLabel}"`, tagX + 50, tagY + 16);
+        ctx.textAlign = 'left';
+      }
+
+      // ----------------------------------------------------
+      // 9. DASHED LEADER LINES TO USER LABELS
+      // ----------------------------------------------------
+      projectedUserNodes.forEach(({ node, proj }) => {
+        const isHovered = hoveredNode?.id === node.id;
+        const isSelected = selectedNode?.id === node.id;
+
+        const isLeft = proj.screenX < width / 2;
+        const lineLen = 34;
+        const lineEndX = isLeft ? proj.screenX - lineLen : proj.screenX + lineLen;
+
+        ctx.save();
+        ctx.setLineDash([2, 3]);
+        ctx.beginPath();
+        ctx.moveTo(proj.screenX, proj.screenY);
+        ctx.lineTo(lineEndX, proj.screenY);
+        ctx.strokeStyle = isHovered || isSelected ? '#15803D' : (isLight ? '#64748B' : '#94A3B8');
+        ctx.lineWidth = isHovered || isSelected ? 1.6 : 1.1;
+        ctx.stroke();
+        ctx.restore();
 
         // Label text
         ctx.font = `${isHovered || isSelected ? 'bold 12px' : '11px'} -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
         ctx.fillStyle = isLight ? '#0F172A' : '#F1F5F9';
         ctx.textAlign = isLeft ? 'right' : 'left';
-        const textOffsetX = isLeft ? lineEndX - 6 : lineEndX + 6;
-        ctx.fillText(node.label, textOffsetX, lineEndY + 3.5);
+        ctx.fillText(node.label, isLeft ? lineEndX - 6 : lineEndX + 6, proj.screenY + 3.5);
       });
 
       // ----------------------------------------------------
-      // 7. HOVER / SELECTION TOOLTIP
+      // 10. HOVER / SELECTION TOOLTIP
       // ----------------------------------------------------
       if (hoveredNode || selectedNode) {
         const activeNode = (hoveredNode || selectedNode)!;
@@ -544,18 +727,18 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
         const tipW = 220;
         const tipH = 58;
         let tipX = proj.screenX - tipW / 2;
-        let tipY = proj.screenY - tipH - 18;
+        let tipY = proj.screenY - tipH - 24;
 
         if (tipX < 15) tipX = 15;
         if (tipX + tipW > width - 15) tipX = width - tipW - 15;
-        if (tipY < 15) tipY = proj.screenY + 20;
+        if (tipY < 15) tipY = proj.screenY + 24;
 
         ctx.beginPath();
-        ctx.roundRect(tipX, tipY, tipW, tipH, 6);
-        ctx.fillStyle = isLight ? 'rgba(15, 23, 42, 0.94)' : 'rgba(23, 37, 60, 0.96)';
+        ctx.roundRect(tipX, tipY, tipW, tipH, 8);
+        ctx.fillStyle = isLight ? 'rgba(15, 23, 42, 0.95)' : 'rgba(23, 37, 60, 0.96)';
         ctx.fill();
-        ctx.strokeStyle = '#3B82F6';
-        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = '#22C55E';
+        ctx.lineWidth = 1.4;
         ctx.stroke();
 
         ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
@@ -564,7 +747,7 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
         ctx.fillText(activeNode.label, tipX + 10, tipY + 18);
 
         ctx.font = '10px JetBrains Mono, monospace';
-        ctx.fillStyle = '#60A5FA';
+        ctx.fillStyle = '#4ADE80';
         const dist = activeNode.distanceToQuery !== undefined ? activeNode.distanceToQuery.toFixed(2) : '0.00';
         ctx.fillText(`Distance to Query: ${dist}`, tipX + 10, tipY + 34);
 
@@ -614,7 +797,7 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
       const screenY = height * 0.70 - y2 * scale * 1.25;
 
       const dist = Math.hypot(mouseX - screenX, mouseY - screenY);
-      if (dist < 22) {
+      if (dist < 24) {
         audioSynth.playClick(1400);
         setSelectedNode(node);
         setActiveQuery(node.label);
@@ -622,7 +805,7 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
         addToast({
           type: 'info',
           title: `Query: "${node.label}"`,
-          message: 'Vector space centered on this topic.',
+          message: 'Vector space centered on this query.',
         });
         return;
       }
@@ -664,7 +847,7 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
       const screenY = height * 0.70 - y2 * scale * 1.25;
 
       const dist = Math.hypot(mouseX - screenX, mouseY - screenY);
-      if (dist < 20) {
+      if (dist < 22) {
         found = node;
         break;
       }
@@ -691,31 +874,18 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
     audioSynth.playWhoosh();
     setActiveQuery(clean);
 
-    let hash = 0;
-    for (let i = 0; i < clean.length; i++) {
-      hash = (hash << 5) - hash + clean.charCodeAt(i);
-      hash |= 0;
-    }
-    hash = Math.abs(hash);
+    const coords = getVectorCoordinates(clean, allNodes.length);
+    setQueryPoint({ x: coords.x, y: coords.y, z: coords.z });
 
-    // Compute new 3D query location
-    const angle = (hash % 360) * (Math.PI / 180);
-    const radius = 0.9 + ((hash % 100) / 100) * 1.1;
-    const newX = Math.cos(angle) * radius;
-    const newY = -0.6 + (((hash >> 2) % 100) / 100) * 1.6;
-    const newZ = Math.sin(angle) * radius;
-
-    setQueryPoint({ x: newX, y: newY, z: newZ });
-
-    // Also persist as a user vector node
+    // Also persist as a real user vector node
     const newNode: VectorNode = {
       id: `query-node-${Date.now()}`,
       label: clean,
-      category: 'rock',
+      category: 'code',
       prompt: clean,
-      x: newX,
-      y: newY,
-      z: newZ,
+      x: coords.x,
+      y: coords.y,
+      z: coords.z,
       isCustom: true,
     };
     const updated = [newNode, ...customUserNodes];
@@ -749,13 +919,13 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <span className="font-mono text-xs font-bold text-[#66C0F4]">01 //</span>
-            <Target className="w-4 h-4 text-[#3B82F6]" />
+            <Target className="w-4 h-4 text-[#22C55E]" />
             <h2 className="text-base sm:text-lg font-bold text-white tracking-wide font-sans">
               3D Latent Vector Space Embedding
             </h2>
           </div>
           <p className="text-xs text-zinc-400 font-mono pt-0.5">
-            3-Axis Projection • Query Radius Clustering • Cosine Proximity
+            3-Axis Projection • Green Similarity Radar • High-Dimensional Clustering
           </p>
         </div>
 
@@ -783,7 +953,7 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
                 setCanvasTheme('dark');
               }}
               className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${canvasTheme === 'dark'
-                ? 'bg-[#3B82F6]/20 border border-[#3B82F6]/50 text-[#60A5FA] font-semibold'
+                ? 'bg-[#22C55E]/20 border border-[#22C55E]/50 text-[#4ADE80] font-semibold'
                 : 'text-zinc-400 hover:text-white'
                 }`}
               title="Dark Mode"
@@ -799,7 +969,7 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
             className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white text-xs transition-all cursor-pointer flex items-center gap-1.5"
             title="Reset to default isometric viewing perspective"
           >
-            <Rotate3d className="w-3.5 h-3.5 text-[#3B82F6]" />
+            <Rotate3d className="w-3.5 h-3.5 text-[#22C55E]" />
             <span>Reset View</span>
           </button>
 
@@ -807,61 +977,71 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
           <button
             onClick={() => setIsRotating(!isRotating)}
             className={`px-3 py-1.5 rounded-xl border text-xs transition-all cursor-pointer flex items-center gap-1.5 ${isRotating
-              ? 'bg-[#3B82F6]/25 border-[#3B82F6]/60 text-white font-medium'
+              ? 'bg-[#22C55E]/25 border-[#22C55E]/60 text-white font-medium'
               : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white'
               }`}
           >
             <span>{isRotating ? 'Pause Orbit' : 'Auto Orbit'}</span>
           </button>
+
+          {/* Clear custom vectors if any */}
+          {customUserNodes.length > 0 && (
+            <button
+              onClick={handleClearCustomVectors}
+              className="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-red-500/15 border border-white/10 hover:border-red-500/30 text-zinc-400 hover:text-red-400 text-xs transition-all cursor-pointer flex items-center gap-1"
+              title="Clear custom added vectors"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
 
       {/* ======================================================== */}
-      {/* 2. QUERY INPUT BAR                                       */}
+      {/* 2. REAL QUERY INPUT BAR                                  */}
       {/* ======================================================== */}
       <form onSubmit={handleQuerySubmit} className="flex flex-wrap sm:flex-nowrap items-center gap-2.5">
         <div className="relative flex-1 min-w-[260px]">
-          <Search className="w-4 h-4 text-[#3B82F6] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[#22C55E] absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={queryInput}
             onChange={(e) => setQueryInput(e.target.value)}
-            placeholder='Enter any query to position radar (e.g. "thrash rock", "synthesizer", "deep learning")...'
-            className="w-full bg-[#101822] border border-[#2A475E] focus:border-[#3B82F6] rounded-xl pl-10 pr-4 py-2 text-xs sm:text-sm text-white placeholder:text-zinc-500 focus:outline-none font-sans"
+            placeholder='Type any search query to position radar in 3D (e.g. "Neural Networks", "TypeScript Generics")...'
+            className="w-full bg-[#101822] border border-[#2A475E] focus:border-[#22C55E] rounded-xl pl-10 pr-4 py-2 text-xs sm:text-sm text-white placeholder:text-zinc-500 focus:outline-none font-sans"
           />
         </div>
 
-        {/* Quick presets */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          {[
-            { label: 'Thrash Rock', query: 'thrash rock', pt: { x: -1.35, y: -0.38, z: 0.60 } },
-            { label: 'Folk & Classics', query: 'folk rock', pt: { x: 0.65, y: 1.15, z: 0.65 } },
-            { label: 'Floor Beats', query: 'classic rock', pt: { x: -0.15, y: -0.92, z: 1.65 } },
-          ].map((preset) => (
-            <button
-              key={preset.label}
-              type="button"
-              onClick={() => {
-                audioSynth.playClick(1200);
-                setActiveQuery(preset.query);
-                setQueryPoint(preset.pt);
-              }}
-              className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-mono transition-all cursor-pointer ${activeQuery.toLowerCase() === preset.query.toLowerCase()
-                ? 'bg-[#3B82F6]/20 border-[#3B82F6]/50 text-[#60A5FA] font-medium'
-                : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white'
-                }`}
-            >
-              {preset.label}
-            </button>
-          ))}
-        </div>
+        {/* Dynamic recent user query chips */}
+        {allNodes.length > 0 && (
+          <div className="flex items-center gap-1.5 shrink-0 overflow-x-auto max-w-sm">
+            {allNodes.slice(0, 3).map((node) => (
+              <button
+                key={node.id}
+                type="button"
+                onClick={() => {
+                  audioSynth.playClick(1200);
+                  setActiveQuery(node.label);
+                  setQueryPoint({ x: node.x, y: node.y, z: node.z });
+                }}
+                className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-mono transition-all cursor-pointer truncate max-w-[120px] ${activeQuery.toLowerCase() === node.label.toLowerCase()
+                  ? 'bg-[#22C55E]/20 border-[#22C55E]/50 text-[#4ADE80] font-medium'
+                  : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white'
+                  }`}
+                title={node.label}
+              >
+                {node.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         <button
           type="submit"
-          className="px-4 py-2 rounded-xl bg-[#3B82F6] hover:bg-[#2563EB] text-white text-xs font-semibold font-mono tracking-wide flex items-center gap-1.5 cursor-pointer transition-all hover:scale-105 shadow-md shrink-0"
+          className="px-4 py-2 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-white text-xs font-semibold font-mono tracking-wide flex items-center gap-1.5 cursor-pointer transition-all hover:scale-105 shadow-md shrink-0"
         >
           <Target className="w-3.5 h-3.5" />
-          <span>Apply Query</span>
+          <span>Project Vector</span>
         </button>
       </form>
 
@@ -871,10 +1051,14 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
       <div className="relative rounded-2xl border border-[#2A475E] overflow-hidden shadow-2xl bg-white">
         {/* Top Floating Helper Pill */}
         <div className="absolute top-3.5 left-3.5 z-10 flex flex-wrap items-center gap-2 font-mono text-[10px] text-zinc-700 bg-white/90 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-zinc-200 shadow-sm pointer-events-none">
-          <span className="w-2 h-2 rounded-full bg-[#D92525]" />
+          <span className="w-2 h-2 rounded-full bg-[#22C55E]" />
           <span className="font-semibold text-zinc-900">3D Vector Space</span>
-          <span>• Active Query: <strong className="text-[#225426]">"{activeQuery}"</strong></span>
-          <span>• Drag to rotate</span>
+          {activeQuery ? (
+            <span>• Active Query: <strong className="text-[#166534]">"{activeQuery}"</strong></span>
+          ) : (
+            <span>• Type query to map vector</span>
+          )}
+          <span>• {allNodes.length} Real Vectors</span>
         </div>
 
         {/* Canvas Element */}
@@ -894,7 +1078,7 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
             <div className="rounded-2xl bg-white/95 backdrop-blur-xl border border-zinc-200 p-5 shadow-2xl space-y-3.5 text-zinc-800">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <span className="w-3.5 h-3.5 rounded-full bg-[#D92525] shadow-sm inline-block" />
+                  <span className="w-3.5 h-3.5 rounded-full bg-[#22C55E] shadow-sm inline-block" />
                   <h3 className="font-bold text-zinc-900 text-base font-sans tracking-wide">
                     {selectedNode.label}
                   </h3>
@@ -910,13 +1094,13 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
               <div className="grid grid-cols-2 gap-2 text-xs font-mono">
                 <div className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200">
                   <span className="text-[10px] text-zinc-500 uppercase block">Distance to Query</span>
-                  <span className="text-[#225426] font-bold text-sm">
+                  <span className="text-[#15803D] font-bold text-sm">
                     {selectedNode.distanceToQuery ? selectedNode.distanceToQuery.toFixed(2) : '0.00'}
                   </span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200">
                   <span className="text-[10px] text-zinc-500 uppercase block">3D Coordinates</span>
-                  <span className="text-[#3B82F6] text-xs">
+                  <span className="text-[#22C55E] text-xs">
                     [{selectedNode.x.toFixed(2)}, {selectedNode.y.toFixed(2)}, {selectedNode.z.toFixed(2)}]
                   </span>
                 </div>
@@ -935,8 +1119,8 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
                 }}
                 className="w-full py-2.5 rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-white text-xs font-mono font-medium transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
               >
-                <span>Ask AI About {selectedNode.label}</span>
-                <ArrowUpRight className="w-3.5 h-3.5 text-[#3B82F6]" />
+                <span>Ask AI About "{selectedNode.label}"</span>
+                <ArrowUpRight className="w-3.5 h-3.5 text-[#22C55E]" />
               </button>
             </div>
           </div>
@@ -949,21 +1133,21 @@ export const UserVectorEmbeddingSpace: React.FC = () => {
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-zinc-400 pt-2 border-t border-[#2A475E]/70">
         <div className="flex flex-wrap items-center gap-4">
           <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#D92525]" />
-            <span className="text-zinc-300">Vector Embeddings (Red Dots)</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-[#22C55E]" />
+            <span className="text-zinc-300">Vibrant Green Vector Dots (Ambient Field)</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-0.5 bg-[#3B82F6]" />
-            <span className="text-zinc-300">3-Axis Coordinate Arrows</span>
+            <span className="w-3.5 h-3.5 rounded-full border-2 border-[#22C55E] bg-white inline-block" />
+            <span className="text-zinc-300">Circular Concept Bubbles & Leader Lines</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#225426]" />
-            <span className="text-zinc-300">Active Query with Concentric Green Radar Rings</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-[#15803D]" />
+            <span className="text-zinc-300">Active Query Radar Rings</span>
           </span>
         </div>
 
         <span className="text-[11px] text-zinc-500">
-          Exact Implementation of 3D Vector Space Graph
+          3D Vector Space • Green Dots • Zero Dummy Data
         </span>
       </div>
     </div>

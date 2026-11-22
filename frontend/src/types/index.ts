@@ -204,3 +204,13 @@ export interface GeneratedImage {
   isFavorite?: boolean;
   upscaled?: boolean;
 }
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  handle: string;
+  avatar: string;
+  bio?: string;
+  createdAt: string;
+}

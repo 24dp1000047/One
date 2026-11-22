@@ -6,6 +6,7 @@ import { generateWithInkling } from './inklingService';
 import { generateFluxImageService, calculateDimensions } from './imageService';
 import { ChatApiResponse } from './types';
 import { checkDatabaseConnection, getRecentTelemetry, persistInteraction } from './db/dbService';
+import { findUserByEmail, findUserById, createUser, hashPassword } from './db/localDb';
 
 dotenv.config();
 
@@ -15,6 +16,128 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// 0. User Authentication Endpoints (Register, Login, Me)
+app.post('/api/auth/register', async (req: Request, res: Response) => {
+  try {
+    const { name, email, password, handle, avatar, bio } = req.body;
+
+    if (!email || !password || !name) {
+      return res.status(400).json({
+        success: false,
+        error: 'Name, email, and password are required',
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        error: 'Password must be at least 6 characters long',
+      });
+    }
+
+    const existingUser = findUserByEmail(email);
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        error: 'An account with this email address already exists',
+      });
+    }
+
+    const newUser = createUser({
+      name,
+      email,
+      password,
+      handle,
+      avatar,
+      bio,
+    });
+
+    const token = `one_auth_${Buffer.from(`${newUser.id}:${Date.now()}`).toString('base64')}`;
+    const { passwordHash, ...safeUser } = newUser;
+
+    console.log(`[Auth] Registered new user: ${safeUser.name} (${safeUser.email})`);
+    return res.status(201).json({
+      success: true,
+      user: safeUser,
+      token,
+      message: 'Account created successfully',
+    });
+  } catch (err: any) {
+    console.error('[Auth Register Error]', err);
+    return res.status(500).json({ success: false, error: err.message || 'Registration failed' });
+  }
+});
+
+app.post('/api/auth/login', async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email and password are required',
+      });
+    }
+
+    const user = findUserByEmail(email);
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        error: 'No account found with this email address',
+      });
+    }
+
+    const inputHash = hashPassword(password);
+    if (user.passwordHash !== inputHash) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid password. Please check your credentials.',
+      });
+    }
+
+    const token = `one_auth_${Buffer.from(`${user.id}:${Date.now()}`).toString('base64')}`;
+    const { passwordHash, ...safeUser } = user;
+
+    console.log(`[Auth] User logged in: ${safeUser.name} (${safeUser.email})`);
+    return res.json({
+      success: true,
+      user: safeUser,
+      token,
+      message: 'Logged in successfully',
+    });
+  } catch (err: any) {
+    console.error('[Auth Login Error]', err);
+    return res.status(500).json({ success: false, error: err.message || 'Login failed' });
+  }
+});
+
+app.get('/api/auth/me', async (req: Request, res: Response) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'Unauthorized: missing token' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    if (!token.startsWith('one_auth_')) {
+      return res.status(401).json({ success: false, error: 'Invalid token format' });
+    }
+
+    const tokenPayload = Buffer.from(token.replace('one_auth_', ''), 'base64').toString('utf-8');
+    const [userId] = tokenPayload.split(':');
+
+    const user = findUserById(userId);
+    if (!user) {
+      return res.status(401).json({ success: false, error: 'User session not found' });
+    }
+
+    const { passwordHash, ...safeUser } = user;
+    return res.json({ success: true, user: safeUser });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 // 1. Health check & System Status
 app.get('/api/health', async (req: Request, res: Response) => {

@@ -17,7 +17,8 @@ import {
   NodeGraphItem,
   GeneratedImage,
   ImageAspectRatio,
-  ImageModel
+  ImageModel,
+  AuthUser
 } from '../types';
 import { 
   INITIAL_CONVERSATIONS, 
@@ -222,6 +223,16 @@ interface AppState {
   activeSection: string;
   setActiveSection: (s: string) => void;
 
+  // User Authentication
+  currentUser: AuthUser | null;
+  authToken: string | null;
+  authModalOpen: boolean;
+  authModalMode: 'login' | 'register';
+  setAuthModalOpen: (open: boolean, mode?: 'login' | 'register') => void;
+  login: (user: AuthUser, token: string) => void;
+  logout: () => void;
+  demoLogin: () => void;
+
   // Toasts
   toasts: Toast[];
   addToast: (toast: Omit<Toast, 'id'>) => void;
@@ -388,6 +399,57 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   activeSection: '01',
   setActiveSection: (s) => set({ activeSection: s }),
+
+  // User Authentication
+  currentUser: loadStorage<AuthUser | null>('auth_user', null),
+  authToken: loadStorage<string | null>('auth_token', null),
+  authModalOpen: false,
+  authModalMode: 'login',
+  setAuthModalOpen: (open, mode = 'login') => set({ authModalOpen: open, authModalMode: mode }),
+  login: (user, token) => {
+    saveStorage('auth_user', user);
+    saveStorage('auth_token', token);
+    set((state) => ({
+      currentUser: user,
+      authToken: token,
+      authModalOpen: false,
+      settings: {
+        ...state.settings,
+        name: user.name,
+        handle: user.handle,
+        avatar: user.avatar,
+        bio: user.bio || state.settings.bio,
+      },
+    }));
+    get().addToast({
+      type: 'success',
+      title: `Welcome, ${user.name}!`,
+      message: 'You are now signed in to ONᵉ AI Studio.',
+    });
+  },
+  logout: () => {
+    localStorage.removeItem('one_ai_auth_user');
+    localStorage.removeItem('one_ai_auth_token');
+    set({ currentUser: null, authToken: null });
+    get().addToast({
+      type: 'info',
+      title: 'Signed Out',
+      message: 'You have been signed out of your session.',
+    });
+  },
+  demoLogin: () => {
+    const demoUser: AuthUser = {
+      id: 'usr-demo-1',
+      name: 'Alex Vance',
+      email: 'alex@onestudio.ai',
+      handle: '@alex_creator',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
+      bio: 'Visual director & digital artist crafting cinematic worlds with ONᵉ AI.',
+      createdAt: new Date().toISOString(),
+    };
+    const demoToken = 'one_auth_demo_token_alex_vance';
+    get().login(demoUser, demoToken);
+  },
 
   // Toasts
   toasts: [],
